@@ -1,0 +1,7 @@
+mypy
+pycodestyle
+sphinx
+sphinx-rtd-theme
+gameframe
+twine
+wheel
