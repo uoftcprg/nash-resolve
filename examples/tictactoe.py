@@ -2,12 +2,12 @@ import pickle
 from time import time
 
 from nashresolve.tictactoe import TTTTreeFactory
-from nashresolve.solvers import CFRPSolver
+from nashresolve.solvers import CFRSolver
 from nashresolve.utils import interact_tree_game
 from os import path
 
-FILE_NAME = 'tictactoe-cfrp.nrs'
-ITER_COUNT = 0
+FILE_NAME = 'tictactoe-cfr.nrs'
+ITER_COUNT = 50
 SAVE_INTERVAL = 100
 
 print('Starting...')
@@ -20,7 +20,7 @@ if path.exists(FILE_NAME):
 else:
     print('Constructing tree...')
 
-    solver = CFRPSolver(TTTTreeFactory().build())
+    solver = CFRSolver(TTTTreeFactory().build())
 
 print('Solving...')
 

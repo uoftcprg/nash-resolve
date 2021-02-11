@@ -1,17 +1,29 @@
 from unittest import TestCase, main
 
 from nashresolve.rockpaperscissors import RPSTreeFactory
-from nashresolve.solvers import CFRSolver
+from nashresolve.solvers import CFRPSolver, CFRSolver
 
 
 class SolverTestCase(TestCase):
-    RPS_ITER_COUNT = 10
+    RPS_CFR_ITER_COUNT = 20
+    RPS_CFRP_ITER_COUNT = 20
 
-    def test_rps(self) -> None:
+    def test_rps_cfr(self) -> None:
         game = RPSTreeFactory().build()
         solver = CFRSolver(game)
 
-        for i in range(self.RPS_ITER_COUNT):
+        for i in range(self.RPS_CFR_ITER_COUNT):
+            solver.step()
+
+        for info_set in game.info_sets:
+            for value in solver.query(info_set):
+                self.assertAlmostEqual(value, 1 / 3)
+
+    def test_rps_cfrp(self) -> None:
+        game = RPSTreeFactory().build()
+        solver = CFRPSolver(game)
+
+        for i in range(self.RPS_CFRP_ITER_COUNT):
             solver.step()
 
         for info_set in game.info_sets:

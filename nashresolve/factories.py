@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from collections import Sequence
+from collections import Hashable, Sequence
 from typing import Generic, TypeVar, Union, cast
 
 from gameframe.game import BaseActor, BaseGame
 from gameframe.sequential import BaseSeqGame
 
 from nashresolve.games import Game, TreeGame
-from nashresolve.trees import ChanceNode, InfoSet, Node, PlayerNode, TerminalNode
+from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
 
 G = TypeVar('G', bound=BaseGame)
 SG = TypeVar('SG', bound=BaseSeqGame)
@@ -73,7 +73,7 @@ class TreeFactory(GameFactory[G, N, P], ABC):
                 actions = self._get_player_actions(player)
                 children = [self._build(action.label, action.substate) for action in actions]
 
-                return PlayerNode(label, children, self._get_info_set(player))
+                return PlayerNode(label, children, state.players.index(player), self._get_info_set_data(player))
 
     @abstractmethod
     def _get_payoff(self, player: P) -> float:
@@ -92,7 +92,7 @@ class TreeFactory(GameFactory[G, N, P], ABC):
         pass
 
     @abstractmethod
-    def _get_info_set(self, player: P) -> InfoSet:
+    def _get_info_set_data(self, player: P) -> Hashable:
         pass
 
     @abstractmethod

@@ -1,14 +1,25 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import Sequence
+from collections import Hashable, Sequence
 from functools import cached_property
+from typing import Any
 
 
 class InfoSet:
-    def __init__(self, action_count: int, player: int):
+    def __init__(self, action_count: int, player: int, data: Hashable):
         self.__action_count = action_count
         self.__player = player
+        self.__data = data
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, InfoSet):
+            return self.__data == other.__data
+        else:
+            return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(self.__data)
 
     @property
     def action_count(self) -> int:
@@ -74,10 +85,10 @@ class ChanceNode(NonTerminalNode):
 
 
 class PlayerNode(NonTerminalNode):
-    def __init__(self, label: str, children: Sequence[Node], info_set: InfoSet):
+    def __init__(self, label: str, children: Sequence[Node], player: int, data: Hashable):
         super().__init__(label, children)
 
-        self.__info_set = info_set
+        self.__info_set = InfoSet(len(children), player, data)
 
     @property
     def info_set(self) -> InfoSet:
