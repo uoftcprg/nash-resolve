@@ -1,6 +1,5 @@
 from collections import Hashable, Sequence
 from copy import deepcopy
-from typing import cast
 
 from gameframe.game import BaseActor
 from gameframe.tictactoe import TTTGame, TTTPlayer
@@ -28,9 +27,6 @@ class TTTTreeFactory(SeqTreeFactory[TTTGame, BaseActor, TTTPlayer]):
             return 0
         else:
             return 1 if player.game.winner is player else -1
-
-    def _get_actor(self, state: TTTGame) -> TTTPlayer:
-        return cast(TTTPlayer, state.actor)
 
     def _get_info_set_data(self, player: TTTPlayer) -> Hashable:
         return tuple(tuple(None if player is None else player.game.players.index(player) for player in row)
