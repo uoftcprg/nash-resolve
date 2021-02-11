@@ -2,7 +2,7 @@ import pickle
 from os import path
 from time import time
 
-from nashresolve.solvers import DCFRSolver
+from nashresolve.solvers import DCFRSolver as Solver
 from nashresolve.tictactoe import TTTTreeFactory
 from utils import interact_tree_game
 
@@ -19,7 +19,7 @@ if path.exists(FILE_NAME):
 else:
     print('Constructing tree...')
 
-    solver = DCFRSolver(TTTTreeFactory().build())
+    solver = Solver(TTTTreeFactory().build())
 
 print('Solving...')
 
