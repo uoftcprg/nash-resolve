@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from abc import ABC, abstractmethod
+# type: ignore
 from functools import cached_property
 from typing import Generic, Optional, Sequence, TypeVar
 
@@ -8,20 +6,8 @@ import numpy as np
 
 from nashresolve.games import TreeGame
 from nashresolve.trees import ChanceNode, InfoSet, Node, PlayerNode, TerminalNode
-
-
-class TreeSolver(ABC):
-    def __init__(self, game: TreeGame):
-        self.__game = game
-
-    @property
-    def game(self) -> TreeGame:
-        return self.__game
-
-    @abstractmethod
-    def query(self, info_set: InfoSet) -> Sequence[float]:
-        pass
-
+from nashresolve.solvers.bases import TreeSolver
+from nashresolve.utils import replace
 
 T = TypeVar('T', bound='CFRSolver')
 
@@ -62,10 +48,10 @@ class CFRSolver(TreeSolver):
             return np.array(node.payoffs)
         elif isinstance(node, ChanceNode):
             return sum(ev * probability for ev, probability in
-                       zip(map(self.ev, node.children), node.probabilities))  # type: ignore
+                       zip(map(self.ev, node.children), node.probabilities))
         elif isinstance(node, PlayerNode):
             return sum(ev * probability for ev, probability in
-                       zip(map(self.ev, node.children), self._data[node.info_set].average_strategy))  # type: ignore
+                       zip(map(self.ev, node.children), self._data[node.info_set].average_strategy))
         else:
             raise TypeError('Argument is not of valid node type.')
 
@@ -73,8 +59,10 @@ class CFRSolver(TreeSolver):
         if isinstance(node, TerminalNode):
             return np.array(node.payoffs)
         elif isinstance(node, ChanceNode):
-            return sum(self._traverse(child, nature_contrib * probability, player_contribs) * probability
-                       for child, probability in zip(node.children, node.probabilities))  # type: ignore
+            return sum(
+                self._traverse(child, nature_contrib * probability, player_contribs) * probability
+                for child, probability in zip(node.children, node.probabilities)
+            )
         elif isinstance(node, PlayerNode):
             return self._solve(node, nature_contrib, player_contribs)
         else:
@@ -82,13 +70,11 @@ class CFRSolver(TreeSolver):
 
     def _solve(self, node: PlayerNode, nature_contrib: float, player_contribs: np.ndarray) -> np.ndarray:
         data = self._data[node.info_set]
-        results: list[np.ndarray] = []
-
-        for i, (child, probability) in enumerate(zip(node.children, data.strategy)):
-            temp_contribs = player_contribs.copy()
-            temp_contribs[node.info_set.player] *= probability
-
-            results.append(self._traverse(child, nature_contrib, temp_contribs))
+        results = [
+            self._traverse(child, nature_contrib, replace(
+                player_contribs, node.info_set.player, player_contribs[node.info_set.player] * probability
+            )) for child, probability in zip(node.children, data.strategy)
+        ]
 
         data.update(
             player_contribs[node.info_set.player],
@@ -96,7 +82,7 @@ class CFRSolver(TreeSolver):
             np.array(results)[:, node.info_set.player],
         )
 
-        return sum(result * probability for result, probability in zip(results, data.strategy))  # type: ignore
+        return sum(result * probability for result, probability in zip(results, data.strategy))
 
     class _Data(Generic[T]):
         def __init__(self, solver: T, info_set: InfoSet):
@@ -114,11 +100,11 @@ class CFRSolver(TreeSolver):
         def strategy(self) -> np.ndarray:
             pos_regrets = np.maximum(0, self.regrets)
 
-            return pos_regrets / pos_regrets.sum() if pos_regrets.any() else self.default_strategy  # type: ignore
+            return pos_regrets / pos_regrets.sum() if pos_regrets.any() else self.default_strategy
 
         @property
         def average_strategy(self) -> np.ndarray:
-            return self.strategy_sum / self.weight_sum if self.weight_sum else self.default_strategy  # type: ignore
+            return self.strategy_sum / self.weight_sum if self.weight_sum else self.default_strategy
 
         @cached_property
         def default_strategy(self) -> np.ndarray:
@@ -144,7 +130,7 @@ class CFRPSolver(CFRSolver):
     class _Data(CFRSolver._Data['CFRPSolver']):
         @property
         def strategy(self) -> np.ndarray:
-            return self.regrets / self.regrets.sum() if self.regrets.any() else self.default_strategy  # type: ignore
+            return self.regrets / self.regrets.sum() if self.regrets.any() else self.default_strategy
 
         def collect(self) -> None:
             super().collect()

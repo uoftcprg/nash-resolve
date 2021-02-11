@@ -2,11 +2,11 @@ from time import time
 
 from nashresolve.rockpaperscissors import RPSTreeFactory
 from nashresolve.solvers import CFRSolver
-from nashresolve.utils import interact_tree_game
+from utils import interact_tree_game
 
 game = RPSTreeFactory().build()
 solver = CFRSolver(game)
-iter_count = 1000
+iter_count = 100
 
 print('Starting...')
 
