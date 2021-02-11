@@ -7,8 +7,7 @@ from nashresolve.utils import interact_tree_game
 from os import path
 
 FILE_NAME = 'tictactoe-dcfr.nrs'
-ITER_COUNT = 50
-SAVE_INTERVAL = 100
+ITER_COUNT = 1
 
 print('Starting...')
 
@@ -29,14 +28,10 @@ start_time = time()
 for i in range(ITER_COUNT):
     print(f'Iteration {i}:', ' '.join(map(str, solver.step())))
 
-    if i % SAVE_INTERVAL == 0:
-        with open(FILE_NAME, 'wb') as file:
-            pickle.dump(solver, file)
-else:
-    with open(FILE_NAME, 'wb') as file:
-        pickle.dump(solver, file)
-
 print(f'Took: {time() - start_time} s')
 print('EV:', ' '.join(map(str, solver.ev())))
+
+with open(FILE_NAME, 'wb') as file:
+    pickle.dump(solver, file)
 
 interact_tree_game(solver.game, solver)
