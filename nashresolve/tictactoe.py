@@ -9,9 +9,6 @@ from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
 
 
 class TTTTreeFactory(SeqTreeFactory[TTTGame, BaseActor, TTTPlayer]):
-    def __init__(self) -> None:
-        super().__init__(2)
-
     def _get_chance_actions(self, nature: BaseActor) -> Sequence[ChanceAction[TTTGame]]:
         raise NotImplementedError
 

@@ -1,17 +1,12 @@
 from abc import ABC, abstractmethod
 from collections import Hashable, Sequence
-from typing import Generic, TypeVar, Union, cast
+from typing import Generic, Union, cast
 
-from gameframe.game import BaseActor, BaseGame
-from gameframe.sequential import BaseSeqGame
+from gameframe.game.generics import G, N, P
+from gameframe.sequential.generics import G as SG
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
-
-G = TypeVar('G', bound=BaseGame)
-SG = TypeVar('SG', bound=BaseSeqGame)
-N = TypeVar('N', bound=BaseActor)
-P = TypeVar('P', bound=BaseActor)
 
 
 class Action(Generic[G]):
@@ -40,13 +35,6 @@ class ChanceAction(Action[G]):
 
 
 class GameFactory(Generic[G, N, P], ABC):
-    def __init__(self, player_count: int):
-        self.__player_count = player_count
-
-    @property
-    def player_count(self) -> int:
-        return self.__player_count
-
     @abstractmethod
     def build(self) -> Game:
         pass
@@ -54,7 +42,9 @@ class GameFactory(Generic[G, N, P], ABC):
 
 class TreeFactory(GameFactory[G, N, P], ABC):
     def build(self) -> TreeGame:
-        return TreeGame(self.player_count, self._build('Root', self._create_game()))
+        game = self._create_game()
+
+        return TreeGame(len(game.players), self._build('Root', game))
 
     def _build(self, label: str, state: G) -> Node:
         if state.terminal:

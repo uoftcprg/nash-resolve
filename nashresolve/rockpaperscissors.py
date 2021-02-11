@@ -8,9 +8,6 @@ from nashresolve.factories import Action, ChanceAction, TreeFactory
 
 
 class RPSTreeFactory(TreeFactory[RPSGame, BaseActor, RPSPlayer]):
-    def __init__(self) -> None:
-        super().__init__(2)
-
     def _get_chance_actions(self, nature: BaseActor) -> Sequence[ChanceAction[RPSGame]]:
         raise NotImplementedError
 
