@@ -69,7 +69,7 @@ class CFRSolver(TreeSolver):
         data = self._data[node.info_set]
         results = [
             self._traverse(child, nature_contrib, replace(
-                player_contribs, node.info_set.player, player_contribs[node.info_set.player] * probability
+                player_contribs, node.info_set.player, player_contribs[node.info_set.player] * probability,
             )) for child, probability in zip(node.children, data.strategy)
         ]
 

@@ -1,9 +1,7 @@
-Nash Resolve
-============
+NashResolve
+===========
 
-Nash Resolve is a a Python library for resolving nash equilibrium.
-
-The full documentation is available at `read the docs <https://nashresolve.readthedocs.io/>`_.
+NashResolve is a Python package for resolving nash equilibrium.
 
 
 License

@@ -1,49 +1,52 @@
+# type: ignore
+# TODO REMOVE IGNORE
 from abc import ABC
 from collections import Hashable, Sequence
 from copy import deepcopy
 from itertools import combinations
 from random import choices
-from typing import cast
 
-from gameframe.poker import HoleCard, NLTHEGame, PokerGame, PokerNature, PokerPlayer
+from gameframe.poker import NLTHEGame, PokerGame, PokerNature, PokerPlayer
 
 from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
 
 
-class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
+class Settings:
     def __init__(self, ante: int, blinds: Sequence[int], starting_stacks: Sequence[int]):
         self.ante = ante
         self.blinds = blinds
         self.starting_stacks = starting_stacks
+
+
+class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
+    def __init__(self, settings: Settings):
+        self.settings = settings
 
     def _get_chance_actions(self, nature: PokerNature) -> Sequence[ChanceAction[PokerGame]]:
         game = nature.game
         actions: list[ChanceAction[PokerGame]] = []
 
         if card_count := game.board_card_target - len(game.board_cards):
-            samples = list(combinations(game.deck, card_count))
+            card_sets = list(combinations(game.deck, card_count))
 
-            for cards in samples:
+            for cards in card_sets:
                 temp_nature = deepcopy(nature)
                 temp_nature.deal_board(*cards)
 
                 actions.append(ChanceAction('Deal Board ' + ' '.join(map(str, cards)), temp_nature.game,
-                                            1 / len(samples)))
+                                            1 / len(card_sets)))
         else:
-            player = next(
-                player for player in game.players if not player.mucked and nature.can_deal_player(
-                    player,
-                    *choices(game.deck, k=game.hole_card_target - len(cast(Sequence[HoleCard], player.hole_cards)))
-                )
-            )
-            samples = list(combinations(game.deck, card_count))
+            player = next(player for player in game.players if player.hole_cards is not None and nature.can_deal_player(
+                player, *choices(game.deck, k=game.hole_card_target - len(player.hole_cards)),
+            ))
+            card_sets = list(combinations(game.deck, game.hole_card_target - len(player.hole_cards)))
 
-            for cards in samples:
+            for cards in card_sets:
                 temp_nature = deepcopy(nature)
                 temp_nature.deal_player(player, *cards)
 
                 actions.append(ChanceAction(f'Deal Player {player.index} ' + ' '.join(map(str, cards)),
-                                            temp_nature.game, 1 / len(samples)))
+                                            temp_nature.game, 1 / len(card_sets)))
 
         return actions
 
@@ -86,4 +89,4 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
 
 class NLTHEFactory(PokerFactory):
     def _create_game(self) -> NLTHEGame:
-        return NLTHEGame(self.ante, self.blinds, self.starting_stacks)
+        return NLTHEGame(self.settings.ante, self.settings.blinds, self.settings.starting_stacks)

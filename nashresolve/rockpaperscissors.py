@@ -2,7 +2,7 @@ from collections import Hashable, Sequence
 from copy import deepcopy
 
 from gameframe.game import BaseActor
-from gameframe.rockpaperscissors import Hand, RPSGame, RPSPlayer
+from gameframe.rockpaperscissors import RPSHand, RPSGame, RPSPlayer
 
 from nashresolve.factories import Action, ChanceAction, TreeFactory
 
@@ -14,7 +14,7 @@ class RPSTreeFactory(TreeFactory[RPSGame, BaseActor, RPSPlayer]):
     def _get_player_actions(self, player: RPSPlayer) -> Sequence[Action[RPSGame]]:
         actions: list[Action[RPSGame]] = []
 
-        for hand in Hand:
+        for hand in RPSHand:
             temp_player = deepcopy(player)
             temp_player.throw(hand)
 

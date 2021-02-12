@@ -2,12 +2,12 @@ import pickle
 from os import path
 from time import time
 
-from nashresolve.solvers import DCFRSolver as Solver
+from nashresolve.solvers import CFRSolver as Solver
 from nashresolve.tictactoe import TTTTreeFactory
 from utils import interact_tree_game
 
-FILE_NAME = 'tictactoe-dcfr.nrs'
-ITER_COUNT = 50
+FILE_NAME = 'tictactoe-cfr.nrs'
+ITER_COUNT = 0
 
 print('Starting...')
 
