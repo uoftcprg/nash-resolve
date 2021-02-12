@@ -1,6 +1,6 @@
 from time import time
 
-from nashresolve.rockpaperscissors import RPSTreeFactory
+from nashresolve.contrib.rockpaperscissors import RPSTreeFactory
 from nashresolve.solvers import CFRSolver
 from utils import interact_tree_game
 

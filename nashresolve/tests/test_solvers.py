@@ -1,6 +1,6 @@
 from unittest import TestCase, main
 
-from nashresolve.rockpaperscissors import RPSTreeFactory
+from nashresolve.contrib.rockpaperscissors import RPSTreeFactory
 from nashresolve.solvers import CFRPSolver, CFRSolver
 
 
