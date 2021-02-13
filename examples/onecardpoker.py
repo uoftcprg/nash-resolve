@@ -2,12 +2,14 @@ import pickle
 from os import path
 from time import time
 
-from nashresolve.contrib.tictactoe import TTTTreeFactory as Factory  # VAR
-from nashresolve.solvers import DCFRSolver as Solver  # VAR
+from nashresolve.contrib.onecardpoker import OCPFactory
+from nashresolve.solvers import DCFRSolver
 from utils import interact_tree_game
 
-FILE_NAME = 'tictactoe-dcfr.nrs'  # VAR
-ITER_COUNT = 0  # VAR
+PLAYER_COUNT = 3
+STACK = 5
+FILE_NAME = f'onecardpoker-{PLAYER_COUNT}-{STACK}-dcfr.nrs'
+ITER_COUNT = 0
 
 print('Starting...')
 
@@ -19,7 +21,7 @@ if path.exists(FILE_NAME):
 else:
     print('Constructing tree...')
 
-    solver = Solver(Factory().build())
+    solver = DCFRSolver(OCPFactory(1, [1, 2], [STACK] * PLAYER_COUNT).build())
 
 print('Solving...')
 
@@ -33,5 +35,7 @@ print('EV:', ' '.join(map(str, solver.ev())))
 
 with open(FILE_NAME, 'wb') as file:
     pickle.dump(solver, file)
+
+print(len(solver.game.info_sets))
 
 interact_tree_game(solver.game, solver)
