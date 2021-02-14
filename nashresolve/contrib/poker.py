@@ -2,19 +2,14 @@ from abc import ABC
 from collections import Hashable, Iterable, Sequence
 from copy import deepcopy
 from itertools import combinations
-from typing import cast
 
 from gameframe.poker import PokerGame, PokerNature, PokerPlayer
-from pokertools import HoleCard
 
 from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
 from nashresolve.utils import limit
 
 
-class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
-    def _get_payoff(self, player: PokerPlayer) -> float:
-        return player.stack - player.starting_stack
-
+class PokerTreeFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
     def _get_chance_actions(self, nature: PokerNature) -> Sequence[ChanceAction[PokerGame]]:
         game = nature.game
         actions: list[ChanceAction[PokerGame]] = []
@@ -72,6 +67,9 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
 
         return actions
 
+    def _get_payoff(self, player: PokerPlayer) -> float:
+        return player.stack - player.starting_stack
+
     def _get_info_set_data(self, player: PokerPlayer) -> Hashable:
         game = player.game
 
@@ -79,21 +77,23 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
             ('pot', game.pot),
             ('board_cards', tuple(game.board_cards)),
             ('players', tuple(
-                (('bet', game.players[i].bet),
-                 ('stack', game.players[i].stack),
-                 ('hole_cards', (
-                     tuple(map(lambda hole_card: hole_card.rank.value + hole_card.suit.value,
-                               cast(Sequence[HoleCard], player.hole_cards))) if i == player.index else
-                     (None if (hole_cards := game.players[i].hole_cards) is None else (None,) * len(hole_cards))))
-                 ) for i in range(len(player.game.players))
-            )),
+                (
+                    ('bet', other.bet),
+                    ('stack', other.stack),
+                    (
+                        'hole_cards',
+                        tuple(map(lambda hole_card: hole_card.rank.value + hole_card.suit.value, player.hole_cards))
+                        if other is player else (None if other.mucked else [None] * len(other.hole_cards))
+                    )
+                ) for other in player.game.players
+            ))
         ))
 
     def _get_bet_raise_amounts(self, player: PokerPlayer) -> Iterable[int]:
-        return range(player.min_bet_raise_amount, player.max_bet_raise_amount)
+        return range(player.min_bet_raise_amount, player.max_bet_raise_amount + 1)
 
 
-class ReducedPokerFactory(PokerFactory):
+class ReducedPokerTreeFactory(PokerTreeFactory):
     def __init__(self, initial_state: PokerGame, bet_raise_scalars: Sequence[float]):
         self.__initial_state = deepcopy(initial_state)
         self.__bet_raise_scalars = tuple(bet_raise_scalars)
@@ -117,8 +117,8 @@ class ReducedPokerFactory(PokerFactory):
         amounts = set()
 
         for scalar in self.__bet_raise_scalars:
-            amounts.add(
-                limit(int(max(bets) + pot_bet * scalar), player.min_bet_raise_amount, player.max_bet_raise_amount))
+            amount = limit(int(max(bets) + pot_bet * scalar), player.min_bet_raise_amount, player.max_bet_raise_amount)
+            amounts.add(amount)
 
         return sorted(amounts)
 

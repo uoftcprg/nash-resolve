@@ -63,15 +63,15 @@ class TreeFactory(GameFactory[G, N, P], ABC):
                                   state.players.index(player), self._get_info_set_data(player))
 
     @abstractmethod
-    def _get_payoff(self, player: P) -> float:
-        pass
-
-    @abstractmethod
     def _get_chance_actions(self, nature: N) -> Sequence[ChanceAction[G]]:
         pass
 
     @abstractmethod
     def _get_player_actions(self, player: P) -> Sequence[Action[G]]:
+        pass
+
+    @abstractmethod
+    def _get_payoff(self, player: P) -> float:
         pass
 
     @abstractmethod

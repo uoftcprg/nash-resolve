@@ -5,7 +5,7 @@ from gameframe.poker import PokerGame
 from gameframe.poker.stages import HoleCardDealingStage, NLBettingStage, ShowdownStage
 from pokertools import Card, CardLike, Evaluator, Hand, Rank, StandardDeck, Suit, parse_card
 
-from nashresolve.contrib.poker import PokerFactory
+from nashresolve.contrib.poker import PokerTreeFactory
 
 
 class OCPDeck(StandardDeck):
@@ -19,8 +19,7 @@ class OCPHand(Hand):
 
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, OCPHand):
-            ranks = list(Rank)
-            return ranks.index(self.__rank) < ranks.index(other.__rank)
+            return self.__rank < other.__rank
         else:
             return NotImplemented
 
@@ -50,7 +49,7 @@ class OCPGame(PokerGame):
                          OCPDeck(), OCPEvaluator(), ante, blinds, starting_stacks)
 
 
-class OCPFactory(PokerFactory):
+class OCPTreeFactory(PokerTreeFactory):
     def __init__(self, ante: int, blinds: Sequence[int], starting_stacks: Sequence[int]):
         self.ante = ante
         self.blinds = blinds

@@ -2,14 +2,14 @@ import pickle
 from os import path
 from time import time
 
-from nashresolve.contrib.onecardpoker import OCPFactory
-from nashresolve.solvers import DCFRSolver
+from nashresolve.contrib.onecardpoker import OCPTreeFactory
+from nashresolve.solvers import CFRSolver
 from utils import interact_tree_game
 
 PLAYER_COUNT = 2
-STACK = 10
-FILE_NAME = f'onecardpoker-{PLAYER_COUNT}-{STACK}-dcfr.nrs'
-ITER_COUNT = 0
+STACK = 5
+FILE_NAME = f'onecardpoker-{PLAYER_COUNT}-{STACK}-cfr.nrs'
+ITER_COUNT = 50
 
 print('Starting...')
 
@@ -21,7 +21,7 @@ if path.exists(FILE_NAME):
 else:
     print('Constructing tree...')
 
-    solver = DCFRSolver(OCPFactory(1, [1, 2], [STACK] * PLAYER_COUNT).build())
+    solver = CFRSolver(OCPTreeFactory(1, [1, 2], [STACK] * PLAYER_COUNT).build())
 
 print('Solving...')
 

@@ -1,8 +1,9 @@
+gameframe
 mypy
 numpy
+pokertools
 pycodestyle
 sphinx
 sphinx-rtd-theme
-gameframe
 twine
 wheel
