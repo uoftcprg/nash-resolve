@@ -8,8 +8,8 @@ from utils import interact_tree_game
 
 PLAYER_COUNT = 2
 STACK = 5
-FILE_NAME = f'onecardpoker-{PLAYER_COUNT}-{STACK}-cfr.nrs'
-ITER_COUNT = 50
+FILE_NAME = f'onecardpoker-{PLAYER_COUNT}-{STACK}-dcfr.nrs'
+ITER_COUNT = 0
 
 print('Starting...')
 

@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from collections import Sequence
 from functools import cached_property
 from typing import Generic, Optional, TypeVar
@@ -15,11 +16,11 @@ T = TypeVar('T', bound='CFRSolver')
 class CFRSolver(TreeSolver):
     """CFRSolver is the class for vanilla counterfactual regret minimization solvers."""
 
-    def __init__(self: T, game: TreeGame):
+    def __init__(self, game: TreeGame):
         super().__init__(game)
 
         self.__iter_count = 0
-        self.__data: dict[InfoSet, CFRSolver._Data[T]] = {
+        self.__data: dict[InfoSet, CFRSolver._BaseData] = {
             info_set: self._Data(self, info_set) for info_set in game.info_sets
         }
 
@@ -81,7 +82,30 @@ class CFRSolver(TreeSolver):
 
         return sum(result * probability for result, probability in zip(results, data.strategy))  # type: ignore
 
-    class _Data(Generic[T]):
+    class _BaseData(ABC):
+        @property
+        @abstractmethod
+        def strategy(self) -> np.ndarray:
+            pass
+
+        @property
+        @abstractmethod
+        def average_strategy(self) -> np.ndarray:
+            pass
+
+        @abstractmethod
+        def update(self, contrib: float, partial_contrib: float, counterfactuals: np.ndarray) -> None:
+            pass
+
+        @abstractmethod
+        def collect(self) -> None:
+            pass
+
+        @abstractmethod
+        def clear(self) -> None:
+            pass
+
+    class _Data(_BaseData, Generic[T]):
         def __init__(self, solver: T, info_set: InfoSet):
             self.solver = solver
             self.info_set = info_set

@@ -12,7 +12,7 @@ class SolverTestCase(TestCase):
     def verify(self, solver: TreeSolver) -> None:
         self.verify_aux(solver.game.root, solver)
 
-    def verify_aux(self, node: Node, solver: TreeSolver):
+    def verify_aux(self, node: Node, solver: TreeSolver) -> None:
         if isinstance(node, ChanceNode):
             self.assertAlmostEqual(sum(node.probabilities), 1)
         elif isinstance(node, PlayerNode):
