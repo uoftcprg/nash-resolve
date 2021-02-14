@@ -42,11 +42,9 @@ class GameFactory(Generic[G, N, P], ABC):
 
 class TreeFactory(GameFactory[G, N, P], ABC):
     def build(self) -> TreeGame:
-        game = self._create_game()
+        return TreeGame(self._build_tree('Root', self._create_game()))
 
-        return TreeGame(len(game.players), self._build('Root', game))
-
-    def _build(self, label: str, state: G) -> Node:
+    def _build_tree(self, label: str, state: G) -> Node:
         if state.terminal:
             return TerminalNode(label, [self._get_payoff(cast(P, player)) for player in state.players])
         else:
@@ -54,16 +52,15 @@ class TreeFactory(GameFactory[G, N, P], ABC):
 
             if actor is state.nature:
                 chance_actions = self._get_chance_actions(cast(N, state.nature))
-                children = [self._build(action.label, action.substate) for action in chance_actions]
-                probabilities = [action.probability for action in chance_actions]
 
-                return ChanceNode(label, children, probabilities)
+                return ChanceNode(label, [self._build_tree(action.label, action.substate) for action in chance_actions],
+                                  [action.probability for action in chance_actions])
             else:
                 player = cast(P, self._get_actor(state))
                 actions = self._get_player_actions(player)
-                children = [self._build(action.label, action.substate) for action in actions]
 
-                return PlayerNode(label, children, state.players.index(player), self._get_info_set_data(player))
+                return PlayerNode(label, [self._build_tree(action.label, action.substate) for action in actions],
+                                  state.players.index(player), self._get_info_set_data(player))
 
     @abstractmethod
     def _get_payoff(self, player: P) -> float:

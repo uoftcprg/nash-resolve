@@ -29,8 +29,7 @@ class TTTTreeFactory(SeqTreeFactory[TTTGame, BaseActor, TTTPlayer]):
             return 1 if player.game.winner is player else -1
 
     def _get_info_set_data(self, player: TTTPlayer) -> Hashable:
-        return tuple(tuple(None if player is None else player.game.players.index(player) for player in row)
-                     for row in player.game.board)
+        return str(player.game.board)
 
     def _create_game(self) -> TTTGame:
         return TTTGame()

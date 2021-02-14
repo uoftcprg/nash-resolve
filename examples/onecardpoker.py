@@ -6,8 +6,8 @@ from nashresolve.contrib.onecardpoker import OCPFactory
 from nashresolve.solvers import DCFRSolver
 from utils import interact_tree_game
 
-PLAYER_COUNT = 3
-STACK = 5
+PLAYER_COUNT = 2
+STACK = 10
 FILE_NAME = f'onecardpoker-{PLAYER_COUNT}-{STACK}-dcfr.nrs'
 ITER_COUNT = 0
 

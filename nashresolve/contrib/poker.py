@@ -2,7 +2,6 @@ from abc import ABC
 from collections import Hashable, Sequence
 from copy import deepcopy
 from itertools import combinations
-from random import choices
 from typing import cast
 
 from gameframe.poker import PokerGame, PokerNature, PokerPlayer
@@ -21,8 +20,8 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
         game = nature.game
         actions: list[ChanceAction[PokerGame]] = []
 
-        if card_count := game.board_card_target - len(game.board_cards):
-            card_sets = list(combinations(game.deck, card_count))
+        if nature.can_deal_board():
+            card_sets = list(combinations(game.deck, nature.board_deal_count))
 
             for cards in card_sets:
                 temp_nature = deepcopy(nature)
@@ -31,11 +30,8 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
                 actions.append(ChanceAction('Deal Board ' + ' '.join(map(str, cards)), temp_nature.game,
                                             1 / len(card_sets)))
         else:
-            player = next(player for player in game.players if nature.can_deal_player(
-                player, *choices(game.deck, k=game.hole_card_target - len(cast(Sequence[HoleCard], player.hole_cards))),
-            ))
-            card_sets = list(combinations(
-                game.deck, game.hole_card_target - len(cast(Sequence[HoleCard], player.hole_cards))))
+            player = next(player for player in game.players if nature.can_deal_player(player))
+            card_sets = list(combinations(game.deck, nature.player_deal_count))
 
             for cards in card_sets:
                 temp_nature = deepcopy(nature)
@@ -61,8 +57,8 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
 
             actions.append(Action('Check/Call', temp_player.game))
 
-        if (interval := player.game.bet_raise_interval) is not None:
-            for amount in range(interval[0], interval[1] + 1):
+        if player.can_bet_raise():
+            for amount in range(player.min_bet_raise_amount, player.max_bet_raise_amount + 1):
                 temp_player = deepcopy(player)
                 temp_player.bet_raise(amount)
 
