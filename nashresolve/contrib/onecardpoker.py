@@ -51,5 +51,10 @@ class OCPGame(PokerGame):
 
 
 class OCPFactory(PokerFactory):
+    def __init__(self, ante: int, blinds: Sequence[int], starting_stacks: Sequence[int]):
+        self.ante = ante
+        self.blinds = blinds
+        self.starting_stacks = starting_stacks
+
     def _create_game(self) -> OCPGame:
         return OCPGame(self.ante, self.blinds, self.starting_stacks)

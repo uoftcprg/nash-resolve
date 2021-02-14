@@ -11,11 +11,6 @@ from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
 
 
 class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
-    def __init__(self, ante: int, blinds: Sequence[int], starting_stacks: Sequence[int]):
-        self.ante = ante
-        self.blinds = blinds
-        self.starting_stacks = starting_stacks
-
     def _get_payoff(self, player: PokerPlayer) -> float:
         return player.stack - player.starting_stack
 
