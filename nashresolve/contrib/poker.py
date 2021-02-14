@@ -1,5 +1,5 @@
 from abc import ABC
-from collections import Hashable, Sequence
+from collections import Hashable, Iterable, Sequence
 from copy import deepcopy
 from itertools import combinations
 from typing import cast
@@ -8,6 +8,7 @@ from gameframe.poker import PokerGame, PokerNature, PokerPlayer
 from pokertools import HoleCard
 
 from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
+from nashresolve.utils import limit
 
 
 class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
@@ -56,7 +57,7 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
             actions.append(Action('Check/Call', temp_player.game))
 
         if player.can_bet_raise():
-            for amount in range(player.min_bet_raise_amount, player.max_bet_raise_amount + 1):
+            for amount in self._get_bet_raise_amounts(player):
                 temp_player = deepcopy(player)
                 temp_player.bet_raise(amount)
 
@@ -87,3 +88,43 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
                  ) for i in range(len(player.game.players))
             )),
         ))
+
+    def _get_bet_raise_amounts(self, player: PokerPlayer) -> Iterable[int]:
+        return range(player.min_bet_raise_amount, player.max_bet_raise_amount)
+
+
+class ReducedPokerFactory(PokerFactory):
+    def __init__(self, initial_state: PokerGame, bet_raise_scalars: Sequence[float]):
+        self.__initial_state = deepcopy(initial_state)
+        self.__bet_raise_scalars = tuple(bet_raise_scalars)
+
+    def _get_chance_actions(self, nature: PokerNature) -> Sequence[ChanceAction[PokerGame]]:
+        return list(map(
+            lambda action: ChanceAction(action.label, self.skip_showdown(action.substate), action.probability),
+            super()._get_chance_actions(nature),
+        ))
+
+    def _get_player_actions(self, player: PokerPlayer) -> Sequence[Action[PokerGame]]:
+        return list(map(lambda action: Action(action.label, self.skip_showdown(action.substate)),
+                        super()._get_player_actions(player)))
+
+    def _create_game(self) -> PokerGame:
+        return self.__initial_state
+
+    def _get_bet_raise_amounts(self, player: PokerPlayer) -> Iterable[int]:
+        bets = [player.bet for player in player.game.players]
+        pot_bet = player.game.pot + sum(bets) + max(bets) - player.bet
+        amounts = set()
+
+        for scalar in self.__bet_raise_scalars:
+            amounts.add(
+                limit(int(max(bets) + pot_bet * scalar), player.min_bet_raise_amount, player.max_bet_raise_amount))
+
+        return sorted(amounts)
+
+    @staticmethod
+    def skip_showdown(game: PokerGame) -> PokerGame:
+        while any(player.can_showdown() for player in game.players):
+            next(player for player in game.players if player.can_showdown()).showdown(True)
+
+        return game
