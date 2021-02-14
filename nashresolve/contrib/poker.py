@@ -78,14 +78,12 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
             ('pot', game.pot),
             ('board_cards', tuple(game.board_cards)),
             ('players', tuple(
-                (
-                    ('bet', game.players[i].bet),
-                    ('stack', game.players[i].stack),
-                    ('hole_cards', (
-                        tuple(map(lambda hole_card: hole_card.rank.value + hole_card.suit.value,
-                                  cast(Sequence[HoleCard], player.hole_cards))) if i == player.index else
-                        (None if (hole_cards := game.players[i].hole_cards) is None else (None,) * len(hole_cards))
-                    )),
-                ) for i in range(len(player.game.players))
+                (('bet', game.players[i].bet),
+                 ('stack', game.players[i].stack),
+                 ('hole_cards', (
+                     tuple(map(lambda hole_card: hole_card.rank.value + hole_card.suit.value,
+                               cast(Sequence[HoleCard], player.hole_cards))) if i == player.index else
+                     (None if (hole_cards := game.players[i].hole_cards) is None else (None,) * len(hole_cards))))
+                 ) for i in range(len(player.game.players))
             )),
         ))
