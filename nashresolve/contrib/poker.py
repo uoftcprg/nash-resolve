@@ -16,6 +16,9 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
         self.blinds = blinds
         self.starting_stacks = starting_stacks
 
+    def _get_payoff(self, player: PokerPlayer) -> float:
+        return player.stack - player.starting_stack
+
     def _get_chance_actions(self, nature: PokerNature) -> Sequence[ChanceAction[PokerGame]]:
         game = nature.game
         actions: list[ChanceAction[PokerGame]] = []
@@ -72,9 +75,6 @@ class PokerFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
                 actions.append(Action('Force showdown' if force else 'Showdown', temp_player.game))
 
         return actions
-
-    def _get_payoff(self, player: PokerPlayer) -> float:
-        return player.stack - player.starting_stack
 
     def _get_info_set_data(self, player: PokerPlayer) -> Hashable:
         game = player.game
