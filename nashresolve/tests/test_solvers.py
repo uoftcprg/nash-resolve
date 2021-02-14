@@ -113,6 +113,8 @@ class SolverTestCase(TestCase):
 
         while not isinstance(node, TerminalNode):
             node = cast(PlayerNode, node)
+            self.assertEqual(len(node.children), 9 - count)
+
             strategy = solver.query(node.info_set)
             node = node.children[max(range(len(node.children)), key=lambda i: strategy[i])]
             count += 1
