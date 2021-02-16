@@ -14,12 +14,13 @@ class InfoSet:
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, InfoSet):
-            return self.__data == other.__data
+            return self.__action_count == other.__action_count and self.__player == other.__player \
+                   and self.__data == other.__data
         else:
             return NotImplemented
 
     def __hash__(self) -> int:
-        return hash(self.__data)
+        return hash(self.__action_count) ^ hash(self.__player) ^ hash(self.__data)
 
     @property
     def action_count(self) -> int:
@@ -37,14 +38,14 @@ class Node(ABC):
     def __repr__(self) -> str:
         return self.__label
 
-    @cached_property
-    def descendents(self) -> Sequence[Node]:
-        return [self] + sum((list(child.descendents) for child in self.children), start=[])
-
     @property
     @abstractmethod
     def children(self) -> Sequence[Node]:
         pass
+
+    @cached_property
+    def descendents(self) -> Sequence[Node]:
+        return [self] + sum((list(child.descendents) for child in self.children), start=[])
 
 
 class TerminalNode(Node):

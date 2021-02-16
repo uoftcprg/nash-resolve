@@ -8,6 +8,15 @@ from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
 
 
 class TTTTreeFactory(SeqTreeFactory[TTTGame, BaseActor, TTTPlayer]):
+    def _create_game(self) -> TTTGame:
+        return TTTGame()
+
+    def _get_payoff(self, player: TTTPlayer) -> float:
+        if player.game.winner is None:
+            return 0
+        else:
+            return 1 if player.game.winner is player else -1
+
     def _get_chance_actions(self, nature: BaseActor) -> Sequence[ChanceAction[TTTGame]]:
         raise NotImplementedError
 
@@ -22,14 +31,5 @@ class TTTTreeFactory(SeqTreeFactory[TTTGame, BaseActor, TTTPlayer]):
 
         return actions
 
-    def _get_payoff(self, player: TTTPlayer) -> float:
-        if player.game.winner is None:
-            return 0
-        else:
-            return 1 if player.game.winner is player else -1
-
     def _get_info_set_data(self, player: TTTPlayer) -> Hashable:
         return str(player.game.board)
-
-    def _create_game(self) -> TTTGame:
-        return TTTGame()

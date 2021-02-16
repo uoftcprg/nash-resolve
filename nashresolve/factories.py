@@ -3,7 +3,7 @@ from collections import Hashable, Sequence
 from typing import Generic, Union, cast
 
 from gameframe.game.generics import G, N, P
-from gameframe.sequential.generics import G as SG
+from gameframe.sequential.generics import SG
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
@@ -42,25 +42,43 @@ class GameFactory(Generic[G, N, P], ABC):
 
 class TreeFactory(GameFactory[G, N, P], ABC):
     def build(self) -> TreeGame:
-        return TreeGame(self._build_tree('Root', self._create_game()))
+        return TreeGame(self._create_node('Root', self._create_game()))
 
-    def _build_tree(self, label: str, state: G) -> Node:
+    def _create_node(self, label: str, state: G) -> Node:
         if state.terminal:
-            return TerminalNode(label, [self._get_payoff(cast(P, player)) for player in state.players])
+            return self._create_terminal_node(label, state)
+        elif self._get_actor(state) is state.nature:
+            return self._create_chance_node(label, state)
         else:
-            actor = self._get_actor(state)
+            return self._create_player_node(label, state)
 
-            if actor is state.nature:
-                chance_actions = self._get_chance_actions(cast(N, state.nature))
+    def _create_terminal_node(self, label: str, state: G) -> TerminalNode:
+        return TerminalNode(label, [self._get_payoff(cast(P, player)) for player in state.players])
 
-                return ChanceNode(label, [self._build_tree(action.label, action.substate) for action in chance_actions],
-                                  [action.probability for action in chance_actions])
-            else:
-                player = cast(P, self._get_actor(state))
-                actions = self._get_player_actions(player)
+    def _create_chance_node(self, label: str, state: G) -> ChanceNode:
+        chance_actions = self._get_chance_actions(cast(N, state.nature))
 
-                return PlayerNode(label, [self._build_tree(action.label, action.substate) for action in actions],
-                                  state.players.index(player), self._get_info_set_data(player))
+        return ChanceNode(label, [self._create_node(action.label, action.substate) for action in chance_actions],
+                          [action.probability for action in chance_actions])
+
+    def _create_player_node(self, label: str, state: G) -> PlayerNode:
+        player = cast(P, self._get_actor(state))
+        actions = self._get_player_actions(player)
+
+        return PlayerNode(label, [self._create_node(action.label, action.substate) for action in actions],
+                          state.players.index(player), self._get_info_set_data(player))
+
+    @abstractmethod
+    def _create_game(self) -> G:
+        pass
+
+    @abstractmethod
+    def _get_actor(self, state: G) -> Union[N, P]:
+        pass
+
+    @abstractmethod
+    def _get_payoff(self, player: P) -> float:
+        pass
 
     @abstractmethod
     def _get_chance_actions(self, nature: N) -> Sequence[ChanceAction[G]]:
@@ -71,19 +89,7 @@ class TreeFactory(GameFactory[G, N, P], ABC):
         pass
 
     @abstractmethod
-    def _get_payoff(self, player: P) -> float:
-        pass
-
-    @abstractmethod
-    def _get_actor(self, state: G) -> Union[N, P]:
-        pass
-
-    @abstractmethod
     def _get_info_set_data(self, player: P) -> Hashable:
-        pass
-
-    @abstractmethod
-    def _create_game(self) -> G:
         pass
 
 

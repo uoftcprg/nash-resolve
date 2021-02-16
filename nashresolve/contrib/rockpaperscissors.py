@@ -8,6 +8,18 @@ from nashresolve.factories import Action, ChanceAction, TreeFactory
 
 
 class RPSTreeFactory(TreeFactory[RPSGame, BaseActor, RPSPlayer]):
+    def _create_game(self) -> RPSGame:
+        return RPSGame()
+
+    def _get_actor(self, state: RPSGame) -> RPSPlayer:
+        return state.players[0 if state.players[0].hand is None else 1]
+
+    def _get_payoff(self, player: RPSPlayer) -> float:
+        if player.game.winner is None:
+            return 0
+        else:
+            return 1 if player.game.winner is player else -1
+
     def _get_chance_actions(self, nature: BaseActor) -> Sequence[ChanceAction[RPSGame]]:
         raise NotImplementedError
 
@@ -22,17 +34,5 @@ class RPSTreeFactory(TreeFactory[RPSGame, BaseActor, RPSPlayer]):
 
         return actions
 
-    def _get_payoff(self, player: RPSPlayer) -> float:
-        if player.game.winner is None:
-            return 0
-        else:
-            return 1 if player.game.winner is player else -1
-
-    def _get_actor(self, state: RPSGame) -> RPSPlayer:
-        return state.players[0 if state.players[0].hand is None else 1]
-
     def _get_info_set_data(self, player: RPSPlayer) -> Hashable:
         return player.game.players.index(player)
-
-    def _create_game(self) -> RPSGame:
-        return RPSGame()

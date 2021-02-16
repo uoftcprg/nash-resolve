@@ -49,21 +49,21 @@ class SolverTestCase(TestCase):
 
         self.verify_ocp(solver, 4)
 
-    def verify_ocp(self, solver: TreeSolver, accuracy: int) -> None:
+    def verify_ocp(self, solver: TreeSolver, places: int) -> None:
         self.verify(solver)
 
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[1].children[0]).info_set)[1], 0, accuracy)
+            cast(PlayerNode, solver.game.root.children[1].children[0]).info_set)[1], 0, places)
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[1].children[0].children[2]).info_set)[1], 0, accuracy)
+            cast(PlayerNode, solver.game.root.children[1].children[0].children[2]).info_set)[1], 0, places)
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[11].children[11]).info_set)[0], 0, accuracy)
+            cast(PlayerNode, solver.game.root.children[11].children[11]).info_set)[0], 0, places)
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[12].children[11].children[2]).info_set)[0], 0, accuracy)
+            cast(PlayerNode, solver.game.root.children[12].children[11].children[2]).info_set)[0], 0, places)
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[12].children[11].children[1]).info_set)[0], 0, accuracy)
+            cast(PlayerNode, solver.game.root.children[12].children[11].children[1]).info_set)[0], 0, places)
         self.assertNotAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[11].children[11]).info_set)[1], 0, accuracy)
+            cast(PlayerNode, solver.game.root.children[11].children[11]).info_set)[1], 0, places)
 
     TTT_ITER_COUNT = 5
     TTT_GAME = TTTTreeFactory().build()
