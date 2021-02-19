@@ -1,16 +1,16 @@
-from collections import MutableSequence, Sequence
-from typing import Any, Collection
+from collections import Sequence
+from typing import Any, Iterable
 
 from gameframe.poker import PokerGame
 from gameframe.poker.stages import HoleCardDealingStage, NLBettingStage, ShowdownStage
-from pokertools import Card, CardLike, Evaluator, Hand, Rank, StandardDeck, Suit, parse_card
+from pokertools import Card, Deck, Evaluator, Hand, Rank, Suit
 
 from nashresolve.contrib.poker import PokerTreeFactory
 
 
-class OCPDeck(StandardDeck):
-    def _create_cards(self) -> MutableSequence[Card]:
-        return list(filter(lambda card: card.suit is Suit.SPADE, super()._create_cards()))
+class OCPDeck(Deck):
+    def __init__(self) -> None:
+        super().__init__([Card(rank, Suit.SPADE) for rank in Rank])
 
 
 class OCPHand(Hand):
@@ -37,8 +37,8 @@ class OCPHand(Hand):
 
 
 class OCPEvaluator(Evaluator):
-    def hand(self, hole_cards: Collection[CardLike], board_cards: Collection[CardLike]) -> Hand:
-        return OCPHand(parse_card(next(iter(hole_cards))).rank)
+    def hand(self, hole_cards: Iterable[Card], board_cards: Iterable[Card]) -> Hand:
+        return OCPHand(next(iter(hole_cards)).rank)
 
 
 class OCPGame(PokerGame):
