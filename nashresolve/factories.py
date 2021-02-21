@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from collections import Hashable, Sequence
 from typing import Generic, Union, cast
 
-from gameframe.game.generics import G, N, P
-from gameframe.sequential.generics import SG
+from gameframe.game._generics import G, N, P
+from gameframe.sequential._generics import SG
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode

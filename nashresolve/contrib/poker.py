@@ -17,7 +17,7 @@ class PokerTreeFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC)
         actions: list[ChanceAction[PokerGame]] = []
 
         if nature.can_deal_board():
-            card_sets = list(combinations(game.deck, nature.board_deal_count))
+            card_sets = list(combinations(sorted(game.deck), nature.board_deal_count))
 
             for cards in card_sets:
                 temp_nature = deepcopy(nature)
@@ -27,7 +27,7 @@ class PokerTreeFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC)
                                             1 / len(card_sets)))
         else:
             player = next(player for player in game.players if nature.can_deal_player(player))
-            card_sets = list(combinations(game.deck, nature.player_deal_count))
+            card_sets = list(combinations(sorted(game.deck), nature.player_deal_count))
 
             for cards in card_sets:
                 temp_nature = deepcopy(nature)

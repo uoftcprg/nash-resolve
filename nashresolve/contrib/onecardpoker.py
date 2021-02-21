@@ -1,8 +1,8 @@
 from collections import Sequence
-from typing import Any, Iterable
+from typing import Iterable
 
 from gameframe.poker import PokerGame
-from gameframe.poker.stages import HoleCardDealingStage, NLBettingStage, ShowdownStage
+from gameframe.poker._stages import HoleCardDealingStage, NLBettingStage, ShowdownStage
 from pokertools import Card, Deck, Evaluator, Hand, Rank, Suit
 
 from nashresolve.contrib.poker import PokerTreeFactory
@@ -10,27 +10,14 @@ from nashresolve.contrib.poker import PokerTreeFactory
 
 class OCPDeck(Deck):
     def __init__(self) -> None:
-        super().__init__([Card(rank, Suit.SPADE) for rank in Rank])
+        super().__init__(Card(rank, Suit.SPADE) for rank in Rank)
 
 
 class OCPHand(Hand):
     def __init__(self, rank: Rank):
+        super().__init__(-rank.index)
+
         self.__rank = rank
-
-    def __lt__(self, other: Any) -> bool:
-        if isinstance(other, OCPHand):
-            return self.__rank < other.__rank
-        else:
-            return NotImplemented
-
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, OCPHand):
-            return self.__rank == other.__rank
-        else:
-            return NotImplemented
-
-    def __hash__(self) -> int:
-        return hash(self.__rank)
 
     def __repr__(self) -> str:
         return self.__rank.value
