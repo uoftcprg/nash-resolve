@@ -16,8 +16,8 @@ class TreeGame(Game):
     def __init__(self, root: Node):
         self.__root = root
 
-    @property
-    def player_count(self) -> int:
+    @cached_property
+    def player_count(self) -> int:  # type: ignore
         return max(info_set.player for info_set in self.info_sets) + 1
 
     @property

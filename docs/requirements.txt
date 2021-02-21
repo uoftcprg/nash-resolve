@@ -1,3 +1,4 @@
+auxiliary
 gameframe
 mypy
 numpy
