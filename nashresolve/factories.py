@@ -1,12 +1,20 @@
 from abc import ABC, abstractmethod
 from collections import Hashable, Sequence
-from typing import Generic, Union, cast
+from typing import Generic, TypeVar, Union, cast
 
-from gameframe.game._generics import G, N, P
-from gameframe.sequential._generics import SG
+from gameframe.game import BaseActor
+from gameframe.game.bases import BaseGame
+from gameframe.sequential.bases import BaseSeqGame
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
+
+G = TypeVar('G', bound=BaseGame)
+N = TypeVar('N', bound=BaseActor)
+P = TypeVar('P', bound=BaseActor)
+A = TypeVar('A', bound=BaseActor)
+
+SG = TypeVar('SG', bound=BaseSeqGame)
 
 
 class Action(Generic[G]):

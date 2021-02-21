@@ -1,5 +1,4 @@
-from collections import Sequence
-from typing import Iterable
+from collections import Iterable, Sequence
 
 from gameframe.poker import PokerGame
 from gameframe.poker._stages import HoleCardDealingStage, NLBettingStage, ShowdownStage
