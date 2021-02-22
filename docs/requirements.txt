@@ -3,7 +3,6 @@ gameframe
 mypy
 numpy
 pokertools
-pycodestyle
 sphinx
 sphinx-rtd-theme
 twine

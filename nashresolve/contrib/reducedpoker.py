@@ -5,7 +5,7 @@ from gameframe.poker import PokerGame, PokerNature, PokerPlayer
 
 from nashresolve.contrib.poker import PokerTreeFactory
 from nashresolve.factories import Action, ChanceAction
-from nashresolve.utils import limit
+from auxiliary.utils import limit
 
 
 class ReducedPokerTreeFactory(PokerTreeFactory, ABC):
