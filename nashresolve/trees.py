@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import Hashable, Sequence
+from collections import Hashable, Iterable, Sequence
 from functools import cached_property
+from itertools import chain
 from typing import Any
 
 
@@ -20,7 +21,7 @@ class InfoSet:
             return NotImplemented
 
     def __hash__(self) -> int:
-        return hash(self.__action_count) ^ hash(self.__player) ^ hash(self.__data)
+        return hash(self.action_count) ^ hash(self.player) ^ hash(self.__data)
 
     @property
     def action_count(self) -> int:
@@ -38,33 +39,33 @@ class Node(ABC):
     def __repr__(self) -> str:
         return self.__label
 
+    @cached_property
+    def descendents(self) -> Sequence[Node]:
+        return [self] + list(chain(*(child.descendents for child in self.children)))
+
     @property
     @abstractmethod
     def children(self) -> Sequence[Node]:
         pass
 
-    @cached_property
-    def descendents(self) -> Sequence[Node]:
-        return [self] + sum((list(child.descendents) for child in self.children), start=[])
-
 
 class TerminalNode(Node):
-    def __init__(self, label: str, payoffs: Sequence[float]):
+    def __init__(self, label: str, payoffs: Iterable[float]):
         super().__init__(label)
 
         self.__payoffs = tuple(payoffs)
 
     @property
-    def payoffs(self) -> Sequence[float]:
-        return self.__payoffs
-
-    @property
     def children(self) -> Sequence[Node]:
         return []
 
+    @property
+    def payoffs(self) -> Sequence[float]:
+        return self.__payoffs
+
 
 class NonTerminalNode(Node, ABC):
-    def __init__(self, label: str, children: Sequence[Node]):
+    def __init__(self, label: str, children: Iterable[Node]):
         super().__init__(label)
 
         self.__children = tuple(children)
@@ -75,7 +76,7 @@ class NonTerminalNode(Node, ABC):
 
 
 class ChanceNode(NonTerminalNode):
-    def __init__(self, label: str, children: Sequence[Node], probabilities: Sequence[float]):
+    def __init__(self, label: str, children: Iterable[Node], probabilities: Iterable[float]):
         super().__init__(label, children)
 
         self.__probabilities = tuple(probabilities)
@@ -86,10 +87,10 @@ class ChanceNode(NonTerminalNode):
 
 
 class PlayerNode(NonTerminalNode):
-    def __init__(self, label: str, children: Sequence[Node], player: int, data: Hashable):
+    def __init__(self, label: str, children: Iterable[Node], player: int, data: Hashable):
         super().__init__(label, children)
 
-        self.__info_set = InfoSet(len(children), player, data)
+        self.__info_set = InfoSet(len(self.children), player, data)
 
     @property
     def info_set(self) -> InfoSet:

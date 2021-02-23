@@ -61,19 +61,18 @@ class TreeFactory(GameFactory[G, N, P], ABC):
             return self._create_player_node(label, state)
 
     def _create_terminal_node(self, label: str, state: G) -> TerminalNode:
-        return TerminalNode(label, [self._get_payoff(cast(P, player)) for player in state.players])
+        return TerminalNode(label, (self._get_payoff(cast(P, player)) for player in state.players))
 
     def _create_chance_node(self, label: str, state: G) -> ChanceNode:
         chance_actions = self._get_chance_actions(cast(N, state.nature))
 
-        return ChanceNode(label, [self._create_node(action.label, action.substate) for action in chance_actions],
-                          [action.probability for action in chance_actions])
+        return ChanceNode(label, (self._create_node(action.label, action.substate) for action in chance_actions),
+                          (action.probability for action in chance_actions))
 
     def _create_player_node(self, label: str, state: G) -> PlayerNode:
-        player = cast(P, self._get_actor(state))
-        actions = self._get_player_actions(player)
+        actions = self._get_player_actions(player := cast(P, self._get_actor(state)))
 
-        return PlayerNode(label, [self._create_node(action.label, action.substate) for action in actions],
+        return PlayerNode(label, (self._create_node(action.label, action.substate) for action in actions),
                           state.players.index(player), self._get_info_set_data(player))
 
     @abstractmethod

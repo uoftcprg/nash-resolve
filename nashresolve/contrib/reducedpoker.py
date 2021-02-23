@@ -9,7 +9,7 @@ from auxiliary.utils import limit
 
 
 class ReducedPokerTreeFactory(PokerTreeFactory, ABC):
-    def __init__(self, bet_raise_scalars: Sequence[float]):
+    def __init__(self, bet_raise_scalars: Iterable[float]):
         self.__bet_raise_scalars = tuple(bet_raise_scalars)
 
     def _get_chance_actions(self, nature: PokerNature) -> Sequence[ChanceAction[PokerGame]]:
