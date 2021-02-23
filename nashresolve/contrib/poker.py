@@ -21,7 +21,7 @@ class PokerTreeFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC)
 
             for cards in card_sets:
                 temp_nature = deepcopy(nature)
-                temp_nature.deal_board(*cards)
+                temp_nature.deal_board(cards)
 
                 actions.append(ChanceAction('Deal Board ' + ' '.join(map(str, cards)), temp_nature.game,
                                             1 / len(card_sets)))
@@ -31,7 +31,7 @@ class PokerTreeFactory(SeqTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC)
 
             for cards in card_sets:
                 temp_nature = deepcopy(nature)
-                temp_nature.deal_player(temp_nature.game.players[player.index], *cards)
+                temp_nature.deal_player(temp_nature.game.players[player.index], cards)
 
                 actions.append(ChanceAction(f'Deal Player {player.index} ' + ' '.join(map(str, cards)),
                                             temp_nature.game, 1 / len(card_sets)))
