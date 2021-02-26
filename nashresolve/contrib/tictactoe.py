@@ -1,35 +1,33 @@
 from collections import Hashable, Sequence
 from copy import deepcopy
 
-from gameframe.game import BaseActor
-from gameframe.tictactoe import TTTGame, TTTPlayer
+from gameframe.tictactoe import TTTGame, TTTPlayer, parse_ttt
 
-from nashresolve.factories import Action, ChanceAction, SeqTreeFactory
+from nashresolve.factories import Action, ChanceAction, SequentialTreeFactory
 
 
-class TTTTreeFactory(SeqTreeFactory[TTTGame, BaseActor, TTTPlayer]):
+class TTTTreeFactory(SequentialTreeFactory[TTTGame, None, TTTPlayer]):
     def _create_game(self) -> TTTGame:
         return TTTGame()
 
-    def _get_payoff(self, player: TTTPlayer) -> float:
-        if player.game.winner is None:
+    def _get_payoff(self, state: TTTGame, player: TTTPlayer) -> float:
+        if state.winner is None:
             return 0
         else:
-            return 1 if player.game.winner is player else -1
+            return 1 if state.winner is player else -1
 
-    def _get_chance_actions(self, nature: BaseActor) -> Sequence[ChanceAction[TTTGame]]:
+    def _get_chance_actions(self, state: TTTGame, nature: None) -> Sequence[ChanceAction[TTTGame]]:
         raise NotImplementedError
 
-    def _get_player_actions(self, player: TTTPlayer) -> Sequence[Action[TTTGame]]:
+    def _get_player_actions(self, state: TTTGame, player: TTTPlayer) -> Sequence[Action[TTTGame]]:
         actions: list[Action[TTTGame]] = []
 
-        for r, c in player.game.empty_coords:
-            temp_player = deepcopy(player)
-            temp_player.mark(r, c)
+        for r, c in state.empty_coords:
+            parse_ttt(substate := deepcopy(state), [(r, c)])
 
-            actions.append(Action(f'Mark ({r}, {c})', temp_player.game))
+            actions.append(Action(f'Mark ({r}, {c})', substate))
 
         return actions
 
-    def _get_info_set_data(self, player: TTTPlayer) -> Hashable:
-        return str(player.game.board)
+    def _get_info_set_data(self, state: TTTGame, player: TTTPlayer) -> Hashable:
+        return str(state.board)

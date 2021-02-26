@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import Hashable, Iterable, Sequence
-from functools import cached_property
+from collections import Hashable, Iterable, Iterator, Sequence
 from itertools import chain
 from typing import Any
 
@@ -39,9 +38,9 @@ class Node(ABC):
     def __repr__(self) -> str:
         return self.__label
 
-    @cached_property
-    def descendents(self) -> Sequence[Node]:
-        return [self] + list(chain(*(child.descendents for child in self.children)))
+    @property
+    def descendents(self) -> Iterator[Node]:
+        return chain([self], *(child.descendents for child in self.children))
 
     @property
     @abstractmethod
@@ -57,7 +56,7 @@ class TerminalNode(Node):
 
     @property
     def children(self) -> Sequence[Node]:
-        return []
+        return ()
 
     @property
     def payoffs(self) -> Sequence[float]:

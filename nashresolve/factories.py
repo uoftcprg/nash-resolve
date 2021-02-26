@@ -2,23 +2,22 @@ from abc import ABC, abstractmethod
 from collections import Hashable, Sequence
 from typing import Generic, TypeVar, Union, cast
 
-from gameframe.game import BaseActor
-from gameframe.game.bases import BaseGame
-from gameframe.sequential.bases import BaseSeqGame
+from gameframe.game import GameInterface
+from gameframe.sequential import SequentialGameInterface
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
 
-G = TypeVar('G', bound=BaseGame)
-N = TypeVar('N', bound=BaseActor)
-P = TypeVar('P', bound=BaseActor)
-A = TypeVar('A', bound=BaseActor)
+_G = TypeVar('_G', bound=GameInterface)
+_N = TypeVar('_N')
+_P = TypeVar('_P')
+_A = TypeVar('_A')
 
-SG = TypeVar('SG', bound=BaseSeqGame)
+_SG = TypeVar('_SG', bound=SequentialGameInterface)
 
 
-class Action(Generic[G]):
-    def __init__(self, label: str, substate: G):
+class Action(Generic[_G]):
+    def __init__(self, label: str, substate: _G):
         self.__label = label
         self.__substate = substate
 
@@ -27,12 +26,12 @@ class Action(Generic[G]):
         return self.__label
 
     @property
-    def substate(self) -> G:
+    def substate(self) -> _G:
         return self.__substate
 
 
-class ChanceAction(Action[G]):
-    def __init__(self, label: str, substate: G, probability: float):
+class ChanceAction(Action[_G]):
+    def __init__(self, label: str, substate: _G, probability: float):
         super().__init__(label, substate)
 
         self.__probability = probability
@@ -42,17 +41,17 @@ class ChanceAction(Action[G]):
         return self.__probability
 
 
-class GameFactory(Generic[G, N, P], ABC):
+class GameFactory(Generic[_G, _N, _P], ABC):
     @abstractmethod
     def build(self) -> Game:
         pass
 
 
-class TreeFactory(GameFactory[G, N, P], ABC):
+class TreeFactory(GameFactory[_G, _N, _P], ABC):
     def build(self) -> TreeGame:
-        return TreeGame(self._create_node('Root', self._create_game()))
+        return TreeGame(self._create_node('ROOT', self._create_game()))
 
-    def _create_node(self, label: str, state: G) -> Node:
+    def _create_node(self, label: str, state: _G) -> Node:
         if state.terminal:
             return self._create_terminal_node(label, state)
         elif self._get_actor(state) is state.nature:
@@ -60,46 +59,47 @@ class TreeFactory(GameFactory[G, N, P], ABC):
         else:
             return self._create_player_node(label, state)
 
-    def _create_terminal_node(self, label: str, state: G) -> TerminalNode:
-        return TerminalNode(label, (self._get_payoff(cast(P, player)) for player in state.players))
+    def _create_terminal_node(self, label: str, state: _G) -> TerminalNode:
+        return TerminalNode(label, (self._get_payoff(state, cast(_P, player)) for player in state.players))
 
-    def _create_chance_node(self, label: str, state: G) -> ChanceNode:
-        chance_actions = self._get_chance_actions(cast(N, state.nature))
+    def _create_chance_node(self, label: str, state: _G) -> ChanceNode:
+        chance_actions = self._get_chance_actions(state, cast(_N, state.nature))
 
         return ChanceNode(label, (self._create_node(action.label, action.substate) for action in chance_actions),
                           (action.probability for action in chance_actions))
 
-    def _create_player_node(self, label: str, state: G) -> PlayerNode:
-        actions = self._get_player_actions(player := cast(P, self._get_actor(state)))
+    def _create_player_node(self, label: str, state: _G) -> PlayerNode:
+        player = cast(_P, self._get_actor(state))
+        actions = self._get_player_actions(state, player)
 
         return PlayerNode(label, (self._create_node(action.label, action.substate) for action in actions),
-                          state.players.index(player), self._get_info_set_data(player))
+                          state.players.index(player), self._get_info_set_data(state, player))
 
     @abstractmethod
-    def _create_game(self) -> G:
+    def _create_game(self) -> _G:
         pass
 
     @abstractmethod
-    def _get_actor(self, state: G) -> Union[N, P]:
+    def _get_actor(self, state: _G) -> Union[_N, _P]:
         pass
 
     @abstractmethod
-    def _get_payoff(self, player: P) -> float:
+    def _get_payoff(self, state: _G, player: _P) -> float:
         pass
 
     @abstractmethod
-    def _get_chance_actions(self, nature: N) -> Sequence[ChanceAction[G]]:
+    def _get_chance_actions(self, state: _G, nature: _N) -> Sequence[ChanceAction[_G]]:
         pass
 
     @abstractmethod
-    def _get_player_actions(self, player: P) -> Sequence[Action[G]]:
+    def _get_player_actions(self, state: _G, player: _P) -> Sequence[Action[_G]]:
         pass
 
     @abstractmethod
-    def _get_info_set_data(self, player: P) -> Hashable:
+    def _get_info_set_data(self, state: _G, player: _P) -> Hashable:
         pass
 
 
-class SeqTreeFactory(TreeFactory[SG, N, P], ABC):
-    def _get_actor(self, state: SG) -> Union[N, P]:
-        return cast(Union[N, P], state.actor)
+class SequentialTreeFactory(TreeFactory[_SG, _N, _P], ABC):
+    def _get_actor(self, state: _SG) -> Union[_N, _P]:
+        return cast(Union[_N, _P], state.actor)

@@ -1,18 +1,18 @@
 from typing import cast
 from unittest import TestCase, main
 
-from nashresolve.contrib.onecardpoker import OCPTreeFactory
+from nashresolve.contrib.poker import KuhnTreeFactory
 from nashresolve.contrib.rockpaperscissors import RPSTreeFactory
 from nashresolve.contrib.tictactoe import TTTTreeFactory
 from nashresolve.solvers import CFRPSolver, CFRSolver, DCFRSolver, TreeSolver
 from nashresolve.trees import ChanceNode, Node, NonTerminalNode, PlayerNode, TerminalNode
 
 
-class SolverTestCase(TestCase):
+class TreeSolverTestCase(TestCase):
     def verify(self, solver: TreeSolver) -> None:
-        self.verify_aux(solver.game.root, solver)
+        self.verify_node(solver.game.root, solver)
 
-    def verify_aux(self, node: Node, solver: TreeSolver) -> None:
+    def verify_node(self, node: Node, solver: TreeSolver) -> None:
         if isinstance(node, ChanceNode):
             self.assertAlmostEqual(sum(node.probabilities), 1)
         elif isinstance(node, PlayerNode):
@@ -20,50 +20,61 @@ class SolverTestCase(TestCase):
 
         if isinstance(node, NonTerminalNode):
             for child in node.children:
-                self.verify_aux(child, solver)
+                self.verify_node(child, solver)
 
-    OCP_ITER_COUNT = 50
-    OCP_GAME = OCPTreeFactory(1, [1, 2], [5, 5]).build()
+    KUHN_ITER_COUNT = 100
+    KUHN_GAME = KuhnTreeFactory().build()
 
-    def test_ocp_cfr(self) -> None:
-        solver = CFRSolver(self.OCP_GAME)
+    def test_kuhn_cfr(self) -> None:
+        solver = CFRSolver(self.KUHN_GAME)
 
-        for i in range(self.OCP_ITER_COUNT):
+        for i in range(self.KUHN_ITER_COUNT):
             solver.step()
 
-        self.verify_ocp(solver, 1)
+        self.verify_kuhn(solver, 1)
 
-    def test_ocp_cfrp(self) -> None:
-        solver = CFRPSolver(self.OCP_GAME)
+    def test_kuhn_cfrp(self) -> None:
+        solver = CFRPSolver(self.KUHN_GAME)
 
-        for i in range(self.OCP_ITER_COUNT):
+        for i in range(self.KUHN_ITER_COUNT):
             solver.step()
 
-        self.verify_ocp(solver, 2)
+        self.verify_kuhn(solver, 2)
 
-    def test_ocp_dcfr(self) -> None:
-        solver = DCFRSolver(self.OCP_GAME)
+    def test_kuhn_dcfr(self) -> None:
+        solver = DCFRSolver(self.KUHN_GAME)
 
-        for i in range(self.OCP_ITER_COUNT):
+        for i in range(self.KUHN_ITER_COUNT):
             solver.step()
 
-        self.verify_ocp(solver, 4)
+        self.verify_kuhn(solver, 3)
 
-    def verify_ocp(self, solver: TreeSolver, places: int) -> None:
+    def verify_kuhn(self, solver: TreeSolver, places: int) -> None:
         self.verify(solver)
 
+        # Check obvious strategy
+
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[1].children[0]).info_set)[1], 0, places)
+            cast(PlayerNode, solver.game.root.children[1].children[0]).info_set)[0], 1, places)
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[1].children[0].children[2]).info_set)[1], 0, places)
+            cast(PlayerNode, solver.game.root.children[1].children[0].children[1]).info_set)[0], 1, places)
         self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[11].children[11]).info_set)[0], 0, places)
-        self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[12].children[11].children[2]).info_set)[0], 0, places)
-        self.assertAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[12].children[11].children[1]).info_set)[0], 0, places)
+            cast(PlayerNode, solver.game.root.children[0].children[0].children[0]).info_set)[0], 1, places)
+
+        # Check mixed strategy
+
         self.assertNotAlmostEqual(solver.query(
-            cast(PlayerNode, solver.game.root.children[11].children[11]).info_set)[1], 0, places)
+            cast(PlayerNode, solver.game.root.children[2].children[1]).info_set)[0], 0, places)
+        self.assertNotAlmostEqual(solver.query(
+            cast(PlayerNode, solver.game.root.children[2].children[1]).info_set)[0], 1, places)
+        self.assertNotAlmostEqual(solver.query(
+            cast(PlayerNode, solver.game.root.children[2].children[1].children[1]).info_set)[0], 0, places)
+        self.assertNotAlmostEqual(solver.query(
+            cast(PlayerNode, solver.game.root.children[2].children[1].children[1]).info_set)[1], 0, places)
+        self.assertNotAlmostEqual(solver.query(
+            cast(PlayerNode, solver.game.root.children[0].children[0]).info_set)[0], 0, places)
+        self.assertNotAlmostEqual(solver.query(
+            cast(PlayerNode, solver.game.root.children[0].children[0]).info_set)[1], 0, places)
 
     TTT_ITER_COUNT = 5
     TTT_GAME = TTTTreeFactory().build()
@@ -97,6 +108,8 @@ class SolverTestCase(TestCase):
 
         query = solver.query(cast(PlayerNode, self.TTT_GAME.root).info_set)
 
+        # Check symmetry
+
         self.assertAlmostEqual(query[0], query[2])
         self.assertAlmostEqual(query[2], query[6])
         self.assertAlmostEqual(query[6], query[8])
@@ -107,6 +120,8 @@ class SolverTestCase(TestCase):
 
         self.assertGreater(query[0], query[1])
         self.assertGreater(query[4], query[1])
+
+        # Check optimal strategy leading to tie
 
         node = self.TTT_GAME.root
         count = 0
