@@ -4,6 +4,7 @@ from copy import deepcopy
 from itertools import combinations
 
 from gameframe.poker import KuhnGame, PokerGame, PokerNature, PokerPlayer, parse_poker
+from pokertools import HoleCard
 
 from nashresolve.factories import Action, ChanceAction, SequentialTreeFactory
 
@@ -69,19 +70,19 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
 
     def _get_info_set_data(self, state: PokerGame, player: PokerPlayer) -> Hashable:
         return str((
-            ('pot', state.pot),
-            ('board_cards', tuple(state.board_cards)),
-            ('players', tuple(self._player_data(other, other is player) for other in state.players))
+            (state.actor.index if isinstance(state.actor, PokerPlayer) else None),
+            state.pot, tuple(state.board_cards), tuple(
+                self._player_data(other, other is player) for other in state.players
+            ),
+            state.nature.can_deal_player(), state.nature.can_deal_board(),
         ))
 
     def _player_data(self, player: PokerPlayer, private: bool) -> Hashable:
         return (
-            ('bet', player.bet),
-            ('stack', player.stack),
-            ('hole_cards', None if player.mucked else tuple(
-                hole_card.rank.value + hole_card.suit.value if private or player.shown else None
-                for hole_card in player.hole_cards
-            )),
+            player.bet, player.stack, None if player.mucked else tuple(
+                HoleCard(hole_card, hole_card.status or private) for hole_card in player.hole_cards
+            ),
+            player.can_fold(), player.can_check_call(), player.can_bet_raise(), player.can_showdown(),
         )
 
     def _get_bet_raise_amounts(self, player: PokerPlayer) -> Iterable[int]:

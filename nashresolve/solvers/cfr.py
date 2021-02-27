@@ -69,8 +69,10 @@ class CFRSolver(TreeSolver):
         if isinstance(node, TerminalNode):
             return np.array(node.payoffs)
         elif isinstance(node, ChanceNode):
-            return sum_(cast(np.ndarray, self._traverse(child, nature_contrib * probability, player_contribs)
-                             * probability) for child, probability in zip(node.children, node.probabilities))
+            return cast(np.ndarray, sum_(
+                self._traverse(child, nature_contrib * probability, player_contribs) * probability
+                for child, probability in zip(node.children, node.probabilities)
+            ))
         elif isinstance(node, PlayerNode):
             return self._solve(node, nature_contrib, player_contribs)
         else:
@@ -90,7 +92,7 @@ class CFRSolver(TreeSolver):
             np.array(results)[:, node.info_set.player],
         )
 
-        return sum_(cast(np.ndarray, result * probability) for result, probability in zip(results, data.strategy))
+        return cast(np.ndarray, sum_(result * probability for result, probability in zip(results, data.strategy)))
 
     class _BaseData(ABC):
         @property
