@@ -71,18 +71,18 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
         return str((
             ('pot', state.pot),
             ('board_cards', tuple(state.board_cards)),
-            ('players', tuple(
-                (
-                    ('bet', other.bet),
-                    ('stack', other.stack),
-                    (
-                        'hole_cards',
-                        tuple(map(lambda hole_card: hole_card.rank.value + hole_card.suit.value, player.hole_cards))
-                        if other is player else (None if other.mucked else [None] * len(tuple(other.hole_cards)))
-                    )
-                ) for other in state.players
-            ))
+            ('players', tuple(self._player_data(other, other is player) for other in state.players))
         ))
+
+    def _player_data(self, player: PokerPlayer, private: bool) -> Hashable:
+        return (
+            ('bet', player.bet),
+            ('stack', player.stack),
+            ('hole_cards', None if player.mucked else tuple(
+                hole_card.rank.value + hole_card.suit.value if private or player.shown else None
+                for hole_card in player.hole_cards
+            )),
+        )
 
     def _get_bet_raise_amounts(self, player: PokerPlayer) -> Iterable[int]:
         return range(player.min_bet_raise_amount, player.max_bet_raise_amount + 1)
