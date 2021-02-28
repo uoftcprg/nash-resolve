@@ -98,24 +98,24 @@ class CFRSolver(TreeSolver):
         @property
         @abstractmethod
         def strategy(self) -> np.ndarray:
-            pass
+            ...
 
         @property
         @abstractmethod
         def average_strategy(self) -> np.ndarray:
-            pass
+            ...
 
         @abstractmethod
         def update(self, contrib: float, partial_contrib: float, counterfactuals: np.ndarray) -> None:
-            pass
+            ...
 
         @abstractmethod
         def collect(self) -> None:
-            pass
+            ...
 
         @abstractmethod
         def clear(self) -> None:
-            pass
+            ...
 
     class _Data(_BaseData, Generic[T]):
         def __init__(self, solver: T, info_set: InfoSet):
