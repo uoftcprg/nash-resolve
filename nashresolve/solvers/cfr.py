@@ -185,7 +185,7 @@ class DCFRSolver(CFRSolver):
         self.__beta = beta
         self.__gamma = gamma
 
-        self._regret_multipliers = np.vectorize(self.regret_multiplier)
+        self._v_regret_multipliers = np.vectorize(self.regret_multiplier)
 
     @property
     def alpha(self) -> float:
@@ -220,4 +220,4 @@ class DCFRSolver(CFRSolver):
 
             self.strategy_sum *= self.solver.gamma_multiplier
             self.weight_sum *= self.solver.gamma_multiplier
-            self.regrets *= self.solver._regret_multipliers(self.regrets)
+            self.regrets *= self.solver._v_regret_multipliers(self.regrets)
