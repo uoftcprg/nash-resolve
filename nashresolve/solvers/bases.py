@@ -15,4 +15,4 @@ class TreeSolver(ABC):
 
     @abstractmethod
     def query(self, info_set: InfoSet) -> Sequence[float]:
-        pass
+        ...

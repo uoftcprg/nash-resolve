@@ -44,7 +44,7 @@ class ChanceAction(Action[_G]):
 class GameFactory(Generic[_G, _N, _P], ABC):
     @abstractmethod
     def build(self) -> Game:
-        pass
+        ...
 
 
 class TreeFactory(GameFactory[_G, _N, _P], ABC):
@@ -77,27 +77,27 @@ class TreeFactory(GameFactory[_G, _N, _P], ABC):
 
     @abstractmethod
     def _create_game(self) -> _G:
-        pass
+        ...
 
     @abstractmethod
     def _get_actor(self, state: _G) -> Union[_N, _P]:
-        pass
+        ...
 
     @abstractmethod
     def _get_payoff(self, state: _G, player: _P) -> float:
-        pass
+        ...
 
     @abstractmethod
     def _get_chance_actions(self, state: _G, nature: _N) -> Sequence[ChanceAction[_G]]:
-        pass
+        ...
 
     @abstractmethod
     def _get_player_actions(self, state: _G, player: _P) -> Sequence[Action[_G]]:
-        pass
+        ...
 
     @abstractmethod
     def _get_info_set_data(self, state: _G, player: _P) -> Hashable:
-        pass
+        ...
 
 
 class SequentialTreeFactory(TreeFactory[_SG, _N, _P], ABC):
