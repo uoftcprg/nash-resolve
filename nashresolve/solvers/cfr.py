@@ -4,7 +4,6 @@ from functools import cached_property
 from typing import Generic, Optional, TypeVar, Union, cast
 
 import numpy as np
-from auxiliary.utils import sum_
 
 from nashresolve.games import TreeGame
 from nashresolve.solvers.bases import TreeSolver
@@ -57,11 +56,11 @@ class CFRSolver(TreeSolver):
         elif isinstance(node, TerminalNode):
             return np.array(node.payoffs)
         elif isinstance(node, ChanceNode):
-            return sum_(cast(np.ndarray, self.ev(child) * probability)
-                        for child, probability in zip(node.children, node.probabilities))
+            return cast(np.ndarray, sum(
+                self.ev(child) * probability for child, probability in zip(node.children, node.probabilities)))
         elif isinstance(node, PlayerNode):
-            return sum_(cast(np.ndarray, self.ev(child) * probability)
-                        for child, probability in zip(node.children, self.query(node)))
+            return cast(np.ndarray, sum(
+                self.ev(child) * probability for child, probability in zip(node.children, self.query(node))))
         else:
             raise TypeError('Argument is not of valid node type.')
 
@@ -69,7 +68,7 @@ class CFRSolver(TreeSolver):
         if isinstance(node, TerminalNode):
             return np.array(node.payoffs)
         elif isinstance(node, ChanceNode):
-            return cast(np.ndarray, sum_(
+            return cast(np.ndarray, sum(
                 self._traverse(child, nature_contrib * probability, player_contribs) * probability
                 for child, probability in zip(node.children, node.probabilities)
             ))
@@ -92,7 +91,7 @@ class CFRSolver(TreeSolver):
             np.array(results)[:, node.info_set.player],
         )
 
-        return cast(np.ndarray, sum_(result * probability for result, probability in zip(results, data.strategy)))
+        return cast(np.ndarray, sum(result * probability for result, probability in zip(results, data.strategy)))
 
     class _BaseData(ABC):
         @property
