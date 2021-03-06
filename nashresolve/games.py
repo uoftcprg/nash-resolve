@@ -9,7 +9,7 @@ class Game(ABC):
     @property
     @abstractmethod
     def player_count(self) -> int:
-        ...
+        pass
 
 
 class TreeGame(Game):

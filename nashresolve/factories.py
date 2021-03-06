@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 from collections import Hashable, Sequence
-from typing import Generic, TypeVar, Union, cast
+from typing import Any, Generic, TypeVar, Union, cast
 
-from gameframe.game import GameInterface
-from gameframe.sequential import SequentialGameInterface
+from gameframe.game import Game as GFGame
+from gameframe.sequential import SequentialGame
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
 
-_G = TypeVar('_G', bound=GameInterface)
+_G = TypeVar('_G', bound=GFGame[Any, Any])
 _N = TypeVar('_N')
 _P = TypeVar('_P')
 _A = TypeVar('_A')
 
-_SG = TypeVar('_SG', bound=SequentialGameInterface)
+_SG = TypeVar('_SG', bound=SequentialGame[Any, Any])
 
 
 class Action(Generic[_G]):
@@ -44,7 +44,7 @@ class ChanceAction(Action[_G]):
 class GameFactory(Generic[_G, _N, _P], ABC):
     @abstractmethod
     def build(self) -> Game:
-        ...
+        pass
 
 
 class TreeFactory(GameFactory[_G, _N, _P], ABC):
@@ -77,27 +77,27 @@ class TreeFactory(GameFactory[_G, _N, _P], ABC):
 
     @abstractmethod
     def _create_game(self) -> _G:
-        ...
+        pass
 
     @abstractmethod
     def _get_actor(self, state: _G) -> Union[_N, _P]:
-        ...
+        pass
 
     @abstractmethod
     def _get_payoff(self, state: _G, player: _P) -> float:
-        ...
+        pass
 
     @abstractmethod
     def _get_chance_actions(self, state: _G, nature: _N) -> Sequence[ChanceAction[_G]]:
-        ...
+        pass
 
     @abstractmethod
     def _get_player_actions(self, state: _G, player: _P) -> Sequence[Action[_G]]:
-        ...
+        pass
 
     @abstractmethod
     def _get_info_set_data(self, state: _G, player: _P) -> Hashable:
-        ...
+        pass
 
 
 class SequentialTreeFactory(TreeFactory[_SG, _N, _P], ABC):
