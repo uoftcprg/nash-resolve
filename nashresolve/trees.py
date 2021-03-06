@@ -45,7 +45,7 @@ class Node(ABC):
     @property
     @abstractmethod
     def children(self) -> Sequence[Node]:
-        ...
+        pass
 
 
 class TerminalNode(Node):
