@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import Hashable, Sequence
+from collections.abc import Hashable, Sequence
 from typing import Any, Final, Generic, TypeVar, Union, cast
 
 from gameframe.game import Game as GFGame

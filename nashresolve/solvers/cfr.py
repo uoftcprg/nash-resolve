@@ -1,4 +1,4 @@
-from collections import Sequence
+from collections.abc import Sequence
 from functools import cached_property
 from typing import Any, Final, Generic, Optional, TypeVar, Union
 

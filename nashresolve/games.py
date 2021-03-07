@@ -1,12 +1,11 @@
-from abc import ABC
-from collections import Iterator, Set
+from collections.abc import Iterator, Set
 from functools import cached_property
 from typing import Final
 
 from nashresolve.trees import InfoSet, Node, PlayerNode
 
 
-class Game(ABC):
+class Game:
     def __init__(self, player_count: int):
         self.player_count: Final = player_count
 

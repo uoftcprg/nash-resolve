@@ -1,5 +1,5 @@
 from abc import ABC
-from collections import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Iterable, Sequence
 from copy import deepcopy
 from itertools import combinations
 

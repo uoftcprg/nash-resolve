@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import Sequence
+from collections.abc import Sequence
 from typing import Final
 
 from nashresolve.games import TreeGame

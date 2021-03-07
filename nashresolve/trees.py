@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from collections import Hashable, Iterable, Iterator
+from collections.abc import Hashable, Iterable, Iterator
 from itertools import chain
 from typing import Any, Final
 

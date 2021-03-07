@@ -1,4 +1,4 @@
-from collections import Hashable, Sequence
+from collections.abc import Hashable, Sequence
 from copy import deepcopy
 
 from gameframe.rockpaperscissors import RPSGame, RPSHand, RPSPlayer
