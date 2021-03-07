@@ -25,15 +25,15 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
 
                 actions.append(ChanceAction('Deal Board ' + ' '.join(map(str, cards)), substate, 1 / len(card_sets)))
         else:
-            player = next(player for player in state.players if nature.can_deal_player(player))
-            card_sets = tuple(combinations(sorted(state.deck), nature.player_deal_count))
+            player = next(player for player in state.players if nature.can_deal_hole(player))
+            card_sets = tuple(combinations(sorted(state.deck), nature.hole_deal_count))
 
             for cards in card_sets:
                 substate = deepcopy(state)
-                substate.nature.deal_player(substate.players[player.index], cards)
+                substate.nature.deal_hole(substate.players[state.players.index(player)], cards)
 
-                actions.append(ChanceAction(f'Deal Player {player.index} ' + ' '.join(map(str, cards)), substate,
-                                            1 / len(card_sets)))
+                actions.append(ChanceAction(f'Deal Player {state.players.index(player)} ' + ' '.join(map(str, cards)),
+                                            substate, 1 / len(card_sets)))
 
         return actions
 
@@ -70,11 +70,11 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
 
     def _get_info_set_data(self, state: PokerGame, player: PokerPlayer) -> Hashable:
         return str((
-            (state.actor.index if isinstance(state.actor, PokerPlayer) else None),
+            (state.players.index(state.actor) if isinstance(state.actor, PokerPlayer) else None),
             state.pot, tuple(state.board_cards), tuple(
                 self._player_data(other, other is player) for other in state.players
             ),
-            state.nature.can_deal_player(), state.nature.can_deal_board(),
+            state.nature.can_deal_hole(), state.nature.can_deal_board(),
         ))
 
     def _player_data(self, player: PokerPlayer, private: bool) -> Hashable:

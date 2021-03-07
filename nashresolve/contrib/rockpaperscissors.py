@@ -29,7 +29,7 @@ class RPSTreeFactory(TreeFactory[RPSGame, None, RPSPlayer]):
             substate = deepcopy(state)
             substate.players[state.players.index(player)].throw(hand)
 
-            actions.append(Action(hand.value, substate))
+            actions.append(Action(str(hand.value), substate))
 
         return actions
 
