@@ -5,7 +5,7 @@ from nashresolve.contrib.poker import KuhnTreeFactory
 from nashresolve.contrib.rockpaperscissors import RPSTreeFactory
 from nashresolve.contrib.tictactoe import TTTTreeFactory
 from nashresolve.solvers import CFRPSolver, CFRSolver, DCFRSolver, TreeSolver
-from nashresolve.trees import ChanceNode, Node, NonTerminalNode, PlayerNode, TerminalNode
+from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
 
 
 class TreeSolverTestCase(TestCase):
@@ -18,9 +18,8 @@ class TreeSolverTestCase(TestCase):
         elif isinstance(node, PlayerNode):
             self.assertAlmostEqual(sum(solver.query(node.info_set)), 1)
 
-        if isinstance(node, NonTerminalNode):
-            for child in node.children:
-                self.verify_node(child, solver)
+        for child in node.children:
+            self.verify_node(child, solver)
 
     KUHN_ITER_COUNT = 100
     KUHN_GAME = KuhnTreeFactory().build()

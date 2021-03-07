@@ -1,6 +1,6 @@
 from collections import Sequence
 from functools import cached_property
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Final, Generic, Optional, TypeVar, Union
 
 from math2.linalg import Vector, full, ones, replaced, zeros
 from math2.misc import product, sum_
@@ -18,14 +18,14 @@ class CFRSolver(TreeSolver):
     def __init__(self, game: TreeGame):
         super().__init__(game)
 
-        self.__iter_count = 0
+        self._iter_count = 0
         self.__data: dict[InfoSet, CFRSolver._Data[Any]] = {
             info_set: self._Data(self, info_set) for info_set in game.info_sets
         }
 
     @property
     def iter_count(self) -> int:
-        return self.__iter_count
+        return self._iter_count
 
     def query(self, data: Union[Node, InfoSet]) -> Sequence[float]:
         if isinstance(data, TerminalNode):
@@ -39,8 +39,11 @@ class CFRSolver(TreeSolver):
         else:
             raise TypeError('Unknown queried type')
 
+    def ev(self, node: Optional[Node] = None) -> Sequence[float]:
+        return self._ev(self.game.root if node is None else node)
+
     def step(self) -> Sequence[float]:
-        self.__iter_count += 1
+        self._iter_count += 1
         counterfactuals = self._traverse(self.game.root, 1, ones(self.game.player_count))
 
         for data in self.__data.values():
@@ -49,15 +52,15 @@ class CFRSolver(TreeSolver):
 
         return tuple(map(float, counterfactuals))
 
-    def ev(self, node: Optional[Node] = None) -> Vector:
+    def _ev(self, node: Node) -> Vector:
         if node is None:
-            return self.ev(self.game.root)
+            return self._ev(self.game.root)
         elif isinstance(node, TerminalNode):
             return Vector(node.payoffs)
         elif isinstance(node, ChanceNode):
-            return sum_(self.ev(child) * probability for child, probability in zip(node.children, node.probabilities))
+            return sum_(self._ev(child) * probability for child, probability in zip(node.children, node.probabilities))
         elif isinstance(node, PlayerNode):
-            return sum_(self.ev(child) * probability for child, probability in zip(node.children, self.query(node)))
+            return sum_(self._ev(child) * probability for child, probability in zip(node.children, self.query(node)))
         else:
             raise TypeError('Argument is not of valid node type.')
 
@@ -140,7 +143,7 @@ class CFRPSolver(CFRSolver):
         def collect(self) -> None:
             super().collect()
 
-            multiplier = self.solver.iter_count / (self.solver.iter_count + 1)
+            multiplier = self.solver._iter_count / (self.solver._iter_count + 1)
 
             self.strategy_sum *= multiplier
             self.weight_sum *= multiplier
@@ -153,33 +156,21 @@ class DCFRSolver(CFRSolver):
     def __init__(self, game: TreeGame, alpha: float = 3 / 2, beta: float = 0, gamma: float = 2):
         super().__init__(game)
 
-        self.__alpha = alpha
-        self.__beta = beta
-        self.__gamma = gamma
-
-    @property
-    def alpha(self) -> float:
-        return self.__alpha
-
-    @property
-    def beta(self) -> float:
-        return self.__beta
-
-    @property
-    def gamma(self) -> float:
-        return self.__gamma
+        self.alpha: Final = alpha
+        self.beta: Final = beta
+        self.gamma: Final = gamma
 
     @property
     def alpha_multiplier(self) -> float:
-        return self.iter_count ** self.alpha / (self.iter_count ** self.alpha + 1)
+        return self._iter_count ** self.alpha / (self._iter_count ** self.alpha + 1)
 
     @property
     def beta_multiplier(self) -> float:
-        return self.iter_count ** self.beta / (self.iter_count ** self.beta + 1)
+        return self._iter_count ** self.beta / (self._iter_count ** self.beta + 1)
 
     @property
     def gamma_multiplier(self) -> float:
-        return (self.iter_count / (self.iter_count + 1)) ** self.gamma
+        return (self._iter_count / (self._iter_count + 1)) ** self.gamma
 
     def regret_multiplier(self, regret: float) -> float:
         return self.alpha_multiplier if regret > 0 else self.beta_multiplier

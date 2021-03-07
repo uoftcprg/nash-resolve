@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import Hashable, Sequence
-from typing import Any, Generic, TypeVar, Union, cast
+from typing import Any, Final, Generic, TypeVar, Union, cast
 
 from gameframe.game import Game as GFGame
 from gameframe.sequential import SequentialGame
@@ -18,27 +18,15 @@ _SG = TypeVar('_SG', bound=SequentialGame[Any, Any])
 
 class Action(Generic[_G]):
     def __init__(self, label: str, substate: _G):
-        self.__label = label
-        self.__substate = substate
-
-    @property
-    def label(self) -> str:
-        return self.__label
-
-    @property
-    def substate(self) -> _G:
-        return self.__substate
+        self.label: Final = label
+        self.substate: Final = substate
 
 
 class ChanceAction(Action[_G]):
     def __init__(self, label: str, substate: _G, probability: float):
         super().__init__(label, substate)
 
-        self.__probability = probability
-
-    @property
-    def probability(self) -> float:
-        return self.__probability
+        self.probability: Final = probability
 
 
 class GameFactory(Generic[_G, _N, _P], ABC):

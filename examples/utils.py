@@ -2,13 +2,13 @@ from typing import Optional, Sequence, cast
 
 from nashresolve.games import TreeGame
 from nashresolve.solvers import TreeSolver
-from nashresolve.trees import ChanceNode, NonTerminalNode, PlayerNode, TerminalNode
+from nashresolve.trees import ChanceNode, PlayerNode, TerminalNode
 
 
 def interact_tree_game(game: TreeGame, solver: Optional[TreeSolver] = None) -> None:
     node = game.root
 
-    while isinstance(node, NonTerminalNode):
+    while node.children:
         print(f'Current: {node}\nChildren:')
 
         probabilities: Sequence[Optional[float]]

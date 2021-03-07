@@ -1,28 +1,21 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections import Iterator, Set
 from functools import cached_property
+from typing import Final
 
 from nashresolve.trees import InfoSet, Node, PlayerNode
 
 
 class Game(ABC):
-    @property
-    @abstractmethod
-    def player_count(self) -> int:
-        pass
+    def __init__(self, player_count: int):
+        self.player_count: Final = player_count
 
 
 class TreeGame(Game):
     def __init__(self, root: Node):
-        self.__root = root
+        super().__init__(max(node.info_set.player for node in root.descendents if isinstance(node, PlayerNode)) + 1)
 
-    @property
-    def player_count(self) -> int:
-        return max(info_set.player for info_set in self.info_sets) + 1
-
-    @property
-    def root(self) -> Node:
-        return self.__root
+        self.root: Final = root
 
     @property
     def nodes(self) -> Iterator[Node]:
