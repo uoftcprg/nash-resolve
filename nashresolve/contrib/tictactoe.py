@@ -1,7 +1,7 @@
 from collections.abc import Hashable, Sequence
 from copy import deepcopy
 
-from gameframe.tictactoe import TTTGame, TTTPlayer, parse_ttt
+from gameframe.ttt import TTTGame, TTTPlayer, parse_ttt
 
 from nashresolve.factories import Action, ChanceAction, SequentialTreeFactory
 

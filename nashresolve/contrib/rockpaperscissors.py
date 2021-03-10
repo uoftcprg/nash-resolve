@@ -1,7 +1,7 @@
 from collections.abc import Hashable, Sequence
 from copy import deepcopy
 
-from gameframe.rockpaperscissors import RPSGame, RPSHand, RPSPlayer
+from gameframe.rps import RPSGame, RPSHand, RPSPlayer
 
 from nashresolve.factories import Action, ChanceAction, TreeFactory
 

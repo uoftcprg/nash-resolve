@@ -3,7 +3,7 @@ from collections.abc import Hashable, Sequence
 from typing import Any, Final, Generic, TypeVar, Union, cast
 
 from gameframe.game import Game as GFGame
-from gameframe.sequential import SequentialGame
+from gameframe.seq import SeqGame
 
 from nashresolve.games import Game, TreeGame
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
@@ -13,7 +13,7 @@ _N = TypeVar('_N')
 _P = TypeVar('_P')
 _A = TypeVar('_A')
 
-_SG = TypeVar('_SG', bound=SequentialGame[Any, Any])
+_SG = TypeVar('_SG', bound=SeqGame[Any, Any])
 
 
 class Action(Generic[_G]):

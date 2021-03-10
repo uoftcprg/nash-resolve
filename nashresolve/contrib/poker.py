@@ -71,7 +71,7 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
     def _get_info_set_data(self, state: PokerGame, player: PokerPlayer) -> Hashable:
         return str((
             (state.players.index(state.actor) if isinstance(state.actor, PokerPlayer) else None),
-            state.pot, tuple(state.board_cards), tuple(
+            state.pot, tuple(state.board), tuple(
                 self._player_data(other, other is player) for other in state.players
             ),
             state.nature.can_deal_hole(), state.nature.can_deal_board(),
@@ -80,13 +80,13 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
     def _player_data(self, player: PokerPlayer, private: bool) -> Hashable:
         return (
             player.bet, player.stack, None if player.mucked else tuple(
-                HoleCard(hole_card, hole_card.status or private) for hole_card in player.hole_cards
+                HoleCard(hole_card, hole_card.status or private) for hole_card in player.hole
             ),
             player.can_fold(), player.can_check_call(), player.can_bet_raise(), player.can_showdown(),
         )
 
     def _get_bet_raise_amounts(self, player: PokerPlayer) -> Iterable[int]:
-        return range(player.min_bet_raise_amount, player.max_bet_raise_amount + 1)
+        return range(player.min_bet_raise, player.max_bet_raise + 1)
 
 
 class KuhnTreeFactory(PokerTreeFactory):
