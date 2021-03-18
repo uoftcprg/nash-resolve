@@ -3,18 +3,18 @@ from collections.abc import Hashable, Iterable, Sequence
 from copy import deepcopy
 from itertools import combinations
 
-from gameframe.poker import KuhnGame, PokerGame, PokerNature, PokerPlayer, parse_poker
+from gameframe.poker import KuhnPoker, Poker, PokerNature, PokerPlayer, parse_poker
 from pokertools import HoleCard
 
 from nashresolve.factories import Action, ChanceAction, SequentialTreeFactory
 
 
-class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer], ABC):
-    def _get_payoff(self, state: PokerGame, player: PokerPlayer) -> float:
+class PokerTreeFactory(SequentialTreeFactory[Poker, PokerNature, PokerPlayer], ABC):
+    def _get_payoff(self, state: Poker, player: PokerPlayer) -> float:
         return player.stack - player.starting_stack
 
-    def _get_chance_actions(self, state: PokerGame, nature: PokerNature) -> Sequence[ChanceAction[PokerGame]]:
-        actions: list[ChanceAction[PokerGame]] = []
+    def _get_chance_actions(self, state: Poker, nature: PokerNature) -> Sequence[ChanceAction[Poker]]:
+        actions: list[ChanceAction[Poker]] = []
 
         if nature.can_deal_board():
             card_sets = tuple(combinations(sorted(state.deck), nature.board_deal_count))
@@ -37,8 +37,8 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
 
         return actions
 
-    def _get_player_actions(self, state: PokerGame, player: PokerPlayer) -> Sequence[Action[PokerGame]]:
-        actions: list[Action[PokerGame]] = []
+    def _get_player_actions(self, state: Poker, player: PokerPlayer) -> Sequence[Action[Poker]]:
+        actions: list[Action[Poker]] = []
 
         if player.can_fold():
             substate = deepcopy(state)
@@ -68,7 +68,7 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
 
         return actions
 
-    def _get_info_set_data(self, state: PokerGame, player: PokerPlayer) -> Hashable:
+    def _get_info_set_data(self, state: Poker, player: PokerPlayer) -> Hashable:
         return str((
             (state.players.index(state.actor) if isinstance(state.actor, PokerPlayer) else None),
             state.pot, tuple(state.board), tuple(
@@ -89,6 +89,6 @@ class PokerTreeFactory(SequentialTreeFactory[PokerGame, PokerNature, PokerPlayer
         return range(player.min_bet_raise, player.max_bet_raise + 1)
 
 
-class KuhnTreeFactory(PokerTreeFactory):
-    def _create_game(self) -> KuhnGame:
-        return KuhnGame()
+class KuhnPokerTreeFactory(PokerTreeFactory):
+    def _create_game(self) -> KuhnPoker:
+        return KuhnPoker()

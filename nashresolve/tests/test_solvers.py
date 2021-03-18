@@ -1,9 +1,9 @@
 from typing import cast
 from unittest import TestCase, main
 
-from nashresolve.contrib.poker import KuhnTreeFactory
-from nashresolve.contrib.rockpaperscissors import RPSTreeFactory
-from nashresolve.contrib.tictactoe import TTTTreeFactory
+from nashresolve.contrib.poker import KuhnPokerTreeFactory
+from nashresolve.contrib.rockpaperscissors import RockPaperScissorsTreeFactory
+from nashresolve.contrib.tictactoe import TicTacToeTreeFactory
 from nashresolve.solvers import CFRPSolver, CFRSolver, DCFRSolver, TreeSolver
 from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
 
@@ -21,34 +21,34 @@ class TreeSolverTestCase(TestCase):
         for child in node.children:
             self.verify_node(child, solver)
 
-    KUHN_ITER_COUNT = 100
-    KUHN_GAME = KuhnTreeFactory().build()
+    KUHN_POKER_ITER_COUNT = 100
+    KUHN_POKER_GAME = KuhnPokerTreeFactory().build()
 
-    def test_kuhn_cfr(self) -> None:
-        solver = CFRSolver(self.KUHN_GAME)
+    def test_kuhn_poker_cfr(self) -> None:
+        solver = CFRSolver(self.KUHN_POKER_GAME)
 
-        for i in range(self.KUHN_ITER_COUNT):
+        for i in range(self.KUHN_POKER_ITER_COUNT):
             solver.step()
 
-        self.verify_kuhn(solver, 1)
+        self.verify_kuhn_poker(solver, 1)
 
-    def test_kuhn_cfrp(self) -> None:
-        solver = CFRPSolver(self.KUHN_GAME)
+    def test_kuhn_poker_cfrp(self) -> None:
+        solver = CFRPSolver(self.KUHN_POKER_GAME)
 
-        for i in range(self.KUHN_ITER_COUNT):
+        for i in range(self.KUHN_POKER_ITER_COUNT):
             solver.step()
 
-        self.verify_kuhn(solver, 2)
+        self.verify_kuhn_poker(solver, 2)
 
-    def test_kuhn_dcfr(self) -> None:
-        solver = DCFRSolver(self.KUHN_GAME)
+    def test_kuhn_poker_dcfr(self) -> None:
+        solver = DCFRSolver(self.KUHN_POKER_GAME)
 
-        for i in range(self.KUHN_ITER_COUNT):
+        for i in range(self.KUHN_POKER_ITER_COUNT):
             solver.step()
 
-        self.verify_kuhn(solver, 3)
+        self.verify_kuhn_poker(solver, 3)
 
-    def verify_kuhn(self, solver: TreeSolver, places: int) -> None:
+    def verify_kuhn_poker(self, solver: TreeSolver, places: int) -> None:
         self.verify(solver)
 
         # Check obvious strategy
@@ -75,37 +75,37 @@ class TreeSolverTestCase(TestCase):
         self.assertNotAlmostEqual(solver.query(
             cast(PlayerNode, solver.game.root.children[0].children[0]).info_set)[1], 0, places)
 
-    TTT_ITER_COUNT = 5
-    TTT_GAME = TTTTreeFactory().build()
+    Tic_Tac_Toe_ITER_COUNT = 5
+    Tic_Tac_Toe_GAME = TicTacToeTreeFactory().build()
 
-    def test_ttt_cfr(self) -> None:
-        solver = CFRSolver(self.TTT_GAME)
+    def test_tic_tac_toe_cfr(self) -> None:
+        solver = CFRSolver(self.Tic_Tac_Toe_GAME)
 
-        for i in range(self.TTT_ITER_COUNT):
+        for i in range(self.Tic_Tac_Toe_ITER_COUNT):
             solver.step()
 
-        self.verify_ttt(solver)
+        self.verify_tic_tac_toe(solver)
 
-    def test_ttt_cfrp(self) -> None:
-        solver = CFRPSolver(self.TTT_GAME)
+    def test_tic_tac_toe_cfrp(self) -> None:
+        solver = CFRPSolver(self.Tic_Tac_Toe_GAME)
 
-        for i in range(self.TTT_ITER_COUNT):
+        for i in range(self.Tic_Tac_Toe_ITER_COUNT):
             solver.step()
 
-        self.verify_ttt(solver)
+        self.verify_tic_tac_toe(solver)
 
-    def test_ttt_dcfr(self) -> None:
-        solver = DCFRSolver(self.TTT_GAME)
+    def test_tic_tac_toe_dcfr(self) -> None:
+        solver = DCFRSolver(self.Tic_Tac_Toe_GAME)
 
-        for i in range(self.TTT_ITER_COUNT):
+        for i in range(self.Tic_Tac_Toe_ITER_COUNT):
             solver.step()
 
-        self.verify_ttt(solver)
+        self.verify_tic_tac_toe(solver)
 
-    def verify_ttt(self, solver: TreeSolver) -> None:
+    def verify_tic_tac_toe(self, solver: TreeSolver) -> None:
         self.verify(solver)
 
-        query = solver.query(cast(PlayerNode, self.TTT_GAME.root).info_set)
+        query = solver.query(cast(PlayerNode, self.Tic_Tac_Toe_GAME.root).info_set)
 
         # Check symmetry
 
@@ -122,7 +122,7 @@ class TreeSolverTestCase(TestCase):
 
         # Check optimal strategy leading to tie
 
-        node = self.TTT_GAME.root
+        node = self.Tic_Tac_Toe_GAME.root
         count = 0
 
         while not isinstance(node, TerminalNode):
@@ -137,39 +137,39 @@ class TreeSolverTestCase(TestCase):
             self.assertAlmostEqual(node.payoffs[1], 0)
             self.assertEqual(count, 9)
 
-    RPS_ITER_COUNT = 100
-    RPS_GAME = RPSTreeFactory().build()
+    ROCK_PAPER_SCISSORS_ITER_COUNT = 100
+    ROCK_PAPER_SCISSORS_GAME = RockPaperScissorsTreeFactory().build()
 
-    def test_rps_cfr(self) -> None:
-        solver = CFRSolver(self.RPS_GAME)
+    def test_rock_paper_scissors_cfr(self) -> None:
+        solver = CFRSolver(self.ROCK_PAPER_SCISSORS_GAME)
 
-        for i in range(self.RPS_ITER_COUNT):
+        for i in range(self.ROCK_PAPER_SCISSORS_ITER_COUNT):
             solver.step()
 
-        for info_set in self.RPS_GAME.info_sets:
+        for info_set in self.ROCK_PAPER_SCISSORS_GAME.info_sets:
             for value in solver.query(info_set):
                 self.assertAlmostEqual(value, 1 / 3)
 
-    def test_rps_cfrp(self) -> None:
-        solver = CFRPSolver(self.RPS_GAME)
+    def test_rock_paper_scissors_cfrp(self) -> None:
+        solver = CFRPSolver(self.ROCK_PAPER_SCISSORS_GAME)
 
-        for i in range(self.RPS_ITER_COUNT):
+        for i in range(self.ROCK_PAPER_SCISSORS_ITER_COUNT):
             solver.step()
 
-        for info_set in self.RPS_GAME.info_sets:
+        for info_set in self.ROCK_PAPER_SCISSORS_GAME.info_sets:
             for value in solver.query(info_set):
                 self.assertAlmostEqual(value, 1 / 3)
 
-    def test_rps_dcfr(self) -> None:
-        solver = DCFRSolver(self.RPS_GAME)
+    def test_rock_paper_scissors_dcfr(self) -> None:
+        solver = DCFRSolver(self.ROCK_PAPER_SCISSORS_GAME)
 
-        for i in range(self.RPS_ITER_COUNT):
+        for i in range(self.ROCK_PAPER_SCISSORS_ITER_COUNT):
             solver.step()
 
-    def verify_rps(self, solver: TreeSolver) -> None:
+    def verify_rock_paper_scissors(self, solver: TreeSolver) -> None:
         self.verify(solver)
 
-        for info_set in self.RPS_GAME.info_sets:
+        for info_set in self.ROCK_PAPER_SCISSORS_GAME.info_sets:
             for value in solver.query(info_set):
                 self.assertAlmostEqual(value, 1 / 3)
 

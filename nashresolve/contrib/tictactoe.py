@@ -1,33 +1,33 @@
 from collections.abc import Hashable, Sequence
 from copy import deepcopy
 
-from gameframe.ttt import TTTGame, TTTPlayer, parse_ttt
+from gameframe.tictactoe import TicTacToe, TicTacToePlayer, parse_tic_tac_toe
 
 from nashresolve.factories import Action, ChanceAction, SequentialTreeFactory
 
 
-class TTTTreeFactory(SequentialTreeFactory[TTTGame, None, TTTPlayer]):
-    def _create_game(self) -> TTTGame:
-        return TTTGame()
+class TicTacToeTreeFactory(SequentialTreeFactory[TicTacToe, None, TicTacToePlayer]):
+    def _create_game(self) -> TicTacToe:
+        return TicTacToe()
 
-    def _get_payoff(self, state: TTTGame, player: TTTPlayer) -> float:
+    def _get_payoff(self, state: TicTacToe, player: TicTacToePlayer) -> float:
         if state.winner is None:
             return 0
         else:
             return 1 if state.winner is player else -1
 
-    def _get_chance_actions(self, state: TTTGame, nature: None) -> Sequence[ChanceAction[TTTGame]]:
+    def _get_chance_actions(self, state: TicTacToe, nature: None) -> Sequence[ChanceAction[TicTacToe]]:
         raise NotImplementedError
 
-    def _get_player_actions(self, state: TTTGame, player: TTTPlayer) -> Sequence[Action[TTTGame]]:
-        actions: list[Action[TTTGame]] = []
+    def _get_player_actions(self, state: TicTacToe, player: TicTacToePlayer) -> Sequence[Action[TicTacToe]]:
+        actions: list[Action[TicTacToe]] = []
 
         for r, c in state.empty_coords:
-            parse_ttt(substate := deepcopy(state), [(r, c)])
+            parse_tic_tac_toe(substate := deepcopy(state), [(r, c)])
 
             actions.append(Action(f'Mark ({r}, {c})', substate))
 
         return actions
 
-    def _get_info_set_data(self, state: TTTGame, player: TTTPlayer) -> Hashable:
+    def _get_info_set_data(self, state: TicTacToe, player: TicTacToePlayer) -> Hashable:
         return str(state.board)

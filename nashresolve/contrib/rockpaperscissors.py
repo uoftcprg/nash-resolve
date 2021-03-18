@@ -1,31 +1,32 @@
 from collections.abc import Hashable, Sequence
 from copy import deepcopy
 
-from gameframe.rps import RPSGame, RPSHand, RPSPlayer
+from gameframe.rockpaperscissors import RockPaperScissors, RockPaperScissorsHand, RockPaperScissorsPlayer
 
 from nashresolve.factories import Action, ChanceAction, TreeFactory
 
 
-class RPSTreeFactory(TreeFactory[RPSGame, None, RPSPlayer]):
-    def _create_game(self) -> RPSGame:
-        return RPSGame()
+class RockPaperScissorsTreeFactory(TreeFactory[RockPaperScissors, None, RockPaperScissorsPlayer]):
+    def _create_game(self) -> RockPaperScissors:
+        return RockPaperScissors()
 
-    def _get_actor(self, state: RPSGame) -> RPSPlayer:
+    def _get_actor(self, state: RockPaperScissors) -> RockPaperScissorsPlayer:
         return state.players[0 if state.players[0].hand is None else 1]
 
-    def _get_payoff(self, state: RPSGame, player: RPSPlayer) -> float:
+    def _get_payoff(self, state: RockPaperScissors, player: RockPaperScissorsPlayer) -> float:
         if state.winner is None:
             return 0
         else:
             return 1 if state.winner is player else -1
 
-    def _get_chance_actions(self, state: RPSGame, nature: None) -> Sequence[ChanceAction[RPSGame]]:
+    def _get_chance_actions(self, state: RockPaperScissors, nature: None) -> Sequence[ChanceAction[RockPaperScissors]]:
         raise NotImplementedError
 
-    def _get_player_actions(self, state: RPSGame, player: RPSPlayer) -> Sequence[Action[RPSGame]]:
-        actions: list[Action[RPSGame]] = []
+    def _get_player_actions(self, state: RockPaperScissors,
+                            player: RockPaperScissorsPlayer) -> Sequence[Action[RockPaperScissors]]:
+        actions: list[Action[RockPaperScissors]] = []
 
-        for hand in RPSHand:
+        for hand in RockPaperScissorsHand:
             substate = deepcopy(state)
             substate.players[state.players.index(player)].throw(hand)
 
@@ -33,5 +34,5 @@ class RPSTreeFactory(TreeFactory[RPSGame, None, RPSPlayer]):
 
         return actions
 
-    def _get_info_set_data(self, state: RPSGame, player: RPSPlayer) -> Hashable:
+    def _get_info_set_data(self, state: RockPaperScissors, player: RockPaperScissorsPlayer) -> Hashable:
         return state.players.index(player)

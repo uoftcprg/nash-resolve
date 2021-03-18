@@ -1,12 +1,12 @@
 from unittest import TestCase, main
 
-from nashresolve.contrib.rockpaperscissors import RPSTreeFactory
+from nashresolve.contrib.rockpaperscissors import RockPaperScissorsTreeFactory
 from nashresolve.trees import TerminalNode
 
 
 class FactoryTestCase(TestCase):
-    def test_rps(self) -> None:
-        game = RPSTreeFactory().build()
+    def test_rock_paper_scissors(self) -> None:
+        game = RockPaperScissorsTreeFactory().build()
 
         self.assertEqual(len(set(game.nodes)), 13)
         self.assertEqual(len(set(game.info_sets)), 2)

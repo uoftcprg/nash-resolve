@@ -3,7 +3,7 @@ from functools import cached_property
 from typing import Any, Final, Generic, Optional, TypeVar, Union
 
 from math2.linalg import Vector, full, ones, replaced, zeros
-from math2.misc import prod, sum_
+from auxiliary import product, sum_
 
 from nashresolve.games import TreeGame
 from nashresolve.solvers.bases import TreeSolver
@@ -85,7 +85,7 @@ class CFRSolver(TreeSolver):
 
         data.update(
             player_contribs[node.info_set.player],
-            nature_contrib * prod(contrib for i, contrib in enumerate(player_contribs) if i != node.info_set.player),
+            nature_contrib * product(contrib for i, contrib in enumerate(player_contribs) if i != node.info_set.player),
             Vector(result[node.info_set.player] for result in results),
         )
 
