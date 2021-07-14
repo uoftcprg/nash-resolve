@@ -1,6 +1,6 @@
 auxiliary
 gameframe
-math2
+numpy
 pokertools
 sphinx
 sphinx-rtd-theme
