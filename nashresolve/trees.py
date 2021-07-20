@@ -1,12 +1,7 @@
 from abc import ABC, abstractmethod
-from collections.abc import Hashable
 from itertools import chain
 
 from auxiliary import flatten
-
-
-class InfoSet(Hashable, ABC):
-    ...
 
 
 class Action:
@@ -34,7 +29,7 @@ class ChanceAction(Action):
         return self.__chance
 
 
-class Node:
+class Node(ABC):
     def __init__(self, actions):
         self.__actions = tuple(actions)
 
