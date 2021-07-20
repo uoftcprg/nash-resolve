@@ -9,21 +9,46 @@ class InfoSet(Hashable, ABC):
     ...
 
 
-class Node:
-    def __init__(self, label, children):
+class Action:
+    def __init__(self, child, label):
+        self.__child = child
         self.__label = label
-        self.__children = tuple(children)
 
-    def __repr__(self):
-        return f'<{type(self).__name__} \'{self.label}\'>'
+    @property
+    def child(self):
+        return self.__child
 
     @property
     def label(self):
         return self.__label
 
+
+class ChanceAction(Action):
+    def __init__(self, chance, child, label):
+        super().__init__(child, label)
+
+        self.__chance = chance
+
+    @property
+    def chance(self):
+        return self.__chance
+
+
+class Node:
+    def __init__(self, actions):
+        self.__actions = tuple(actions)
+
+    @property
+    def actions(self):
+        return self.__actions
+
+    @property
+    def labels(self):
+        return map(Action.label.fget, self.actions)
+
     @property
     def children(self):
-        return self.__children
+        return map(Action.child.fget, self.actions)
 
     @property
     def descendants(self):
@@ -40,8 +65,8 @@ class Node:
 
 
 class TerminalNode(Node):
-    def __init__(self, label, payoffs):
-        super().__init__(label, ())
+    def __init__(self, payoffs):
+        super().__init__(())
 
         self.__payoffs = tuple(payoffs)
 
@@ -60,14 +85,9 @@ class TerminalNode(Node):
 
 
 class ChanceNode(Node):
-    def __init__(self, label, children, chances):
-        super().__init__(label, children)
-
-        self.__chances = tuple(chances)
-
     @property
     def chances(self):
-        return self.__chances
+        return map(ChanceAction.chance.fget, self.actions)
 
     def is_terminal(self):
         return False
@@ -80,8 +100,8 @@ class ChanceNode(Node):
 
 
 class PlayerNode(Node):
-    def __init__(self, label, children, player, info_set):
-        super().__init__(label, children)
+    def __init__(self, player, info_set, actions):
+        super().__init__(actions)
 
         self.__player = player
         self.__info_set = info_set
