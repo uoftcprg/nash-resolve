@@ -1,25 +1,41 @@
-from collections.abc import Iterator, Set
-from functools import cached_property
-from typing import Final
-
-from nashresolve.trees import InfoSet, Node, PlayerNode
+from nashresolve.trees import Node, PlayerNode
 
 
 class Game:
-    def __init__(self, player_count: int):
-        self.player_count: Final = player_count
+    def __init__(self, players):
+        self.__players = tuple(players)
+
+    @property
+    def players(self):
+        return self.__players
 
 
 class TreeGame(Game):
-    def __init__(self, root: Node):
-        super().__init__(max(node.info_set.player for node in root.descendents if isinstance(node, PlayerNode)) + 1)
+    def __init__(self, root):
+        self.__root = root
 
-        self.root: Final = root
+        super().__init__(range(max(map(PlayerNode.player.fget, self.player_nodes)) + 1))
 
     @property
-    def nodes(self) -> Iterator[Node]:
+    def root(self):
+        return self.__root
+
+    @property
+    def nodes(self):
         return self.root.descendents
 
-    @cached_property
-    def info_sets(self) -> Set[InfoSet]:
-        return frozenset(node.info_set for node in self.nodes if isinstance(node, PlayerNode))
+    @property
+    def terminal_nodes(self):
+        return filter(Node.is_terminal, self.nodes)
+
+    @property
+    def chance_nodes(self):
+        return filter(Node.is_chance, self.nodes)
+
+    @property
+    def player_nodes(self):
+        return filter(Node.is_player, self.nodes)
+
+    @property
+    def info_sets(self):
+        return map(PlayerNode.info_set.fget, self.player_nodes)
