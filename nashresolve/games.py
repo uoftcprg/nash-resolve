@@ -26,15 +26,15 @@ class TreeGame(Game):
 
     @property
     def terminal_nodes(self):
-        return filter(Node.is_terminal, self.nodes)
+        return filter(Node.is_terminal_node, self.nodes)
 
     @property
     def chance_nodes(self):
-        return filter(Node.is_chance, self.nodes)
+        return filter(Node.is_chance_node, self.nodes)
 
     @property
     def player_nodes(self):
-        return filter(Node.is_player, self.nodes)
+        return filter(Node.is_player_node, self.nodes)
 
     @property
     def info_sets(self):
