@@ -2,7 +2,7 @@ from collections import defaultdict
 from functools import partial
 from unittest import TestCase, main
 
-from nashresolve.factories import RockPaperScissorsTreeFactory, TicTacToeTreeFactory
+from nashresolve.factories import KuhnPokerTreeFactory, RockPaperScissorsTreeFactory, TicTacToeTreeFactory
 from nashresolve.trees import TerminalNode
 
 
@@ -46,6 +46,9 @@ class FactoryTestCase(TestCase):
         self.assertTrue(game.is_zero_sum())
 
         self.assertSetEqual(set(map(TerminalNode.payoffs.fget, game.terminal_nodes)), {(0, 0), (-1, 1), (1, -1)})
+
+    def test_kuhn(self):
+        game = KuhnPokerTreeFactory().build()
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 from abc import ABC
 from copy import deepcopy
+from functools import partial
 from itertools import combinations
 
 from pokertools import KuhnPoker, PokerPlayer
@@ -59,7 +60,7 @@ class PokerTreeFactory(SequentialTreeFactory, ABC):
             game.actor.index,
             game.pot,
             tuple(map(str, game.board)),
-            tuple(map(self._get_player_info_set, game.players)),
+            tuple(map(partial(self._get_player_info_set, player), game.players)),
         ))
 
 

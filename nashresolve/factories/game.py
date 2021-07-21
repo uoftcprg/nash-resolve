@@ -19,7 +19,7 @@ class TreeFactory(Factory, ABC):
         if actor is None:
             return TerminalNode(self._get_payoffs(game))
         elif actor.is_nature():
-            return ChanceNode(self._create_chance_actions(game))
+            return ChanceNode(self._create_chance_actions(actor))
         elif actor.is_player():
             return PlayerNode(actor.index, self._get_info_set(actor), self._create_actions(actor))
         else:
