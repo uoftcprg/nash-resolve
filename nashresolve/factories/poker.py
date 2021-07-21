@@ -15,12 +15,10 @@ class PokerTreeFactory(SequentialTreeFactory, ABC):
         return other.bet, other.stack, tuple(map(repr if player is other else str, other.hole))
 
     def _create_node(self, game):
-        actor = game.actor
+        while game.stage is not None and game.stage.is_showdown_stage():
+            game.parse('s')
 
-        if actor is not None and actor.is_player() and actor.can_showdown():
-            return self._create_node(game.parse('s'))
-        else:
-            return super()._create_node(game)
+        return super()._create_node(game)
 
     def _create_actions(self, player):
         game = player.game
