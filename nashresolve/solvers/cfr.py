@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 from functools import cached_property
-from typing import Any, Final, Generic, Optional, TypeVar, Union
 
 from math2.linalg import Vector, full, ones, replaced, zeros
 from auxiliary import product, sum_
@@ -15,19 +14,19 @@ T = TypeVar('T', bound='CFRSolver')
 class CFRSolver(TreeSolver):
     """CFRSolver is the class for vanilla counterfactual regret minimization solvers."""
 
-    def __init__(self, game: TreeGame):
+    def __init__(self, game):
         super().__init__(game)
 
         self._iter_count = 0
-        self.__data: dict[InfoSet, CFRSolver._Data[Any]] = {
+        self.__data = {
             info_set: self._Data(self, info_set) for info_set in game.info_sets
         }
 
     @property
-    def iter_count(self) -> int:
+    def iter_count(self):
         return self._iter_count
 
-    def query(self, data: Union[Node, InfoSet]) -> Sequence[float]:
+    def query(self, data):
         if isinstance(data, TerminalNode):
             return []
         elif isinstance(data, ChanceNode):
@@ -39,10 +38,10 @@ class CFRSolver(TreeSolver):
         else:
             raise TypeError('Unknown queried type')
 
-    def ev(self, node: Optional[Node] = None) -> Sequence[float]:
+    def ev(self, node: Optional[Node] = None):
         return self._ev(self.game.root if node is None else node)
 
-    def step(self) -> Sequence[float]:
+    def step(self):
         self._iter_count += 1
         counterfactuals = self._traverse(self.game.root, 1, ones(self.game.player_count))
 
@@ -52,7 +51,7 @@ class CFRSolver(TreeSolver):
 
         return tuple(map(float, counterfactuals))
 
-    def _ev(self, node: Node) -> Vector:
+    def _ev(self, node):
         if node is None:
             return self._ev(self.game.root)
         elif isinstance(node, TerminalNode):
@@ -64,7 +63,7 @@ class CFRSolver(TreeSolver):
         else:
             raise TypeError('Argument is not of valid node type.')
 
-    def _traverse(self, node: Node, nature_contrib: float, player_contribs: Vector) -> Vector:
+    def _traverse(self, node, nature_contrib, player_contribs):
         if isinstance(node, TerminalNode):
             return Vector(node.payoffs)
         elif isinstance(node, ChanceNode):
@@ -75,7 +74,7 @@ class CFRSolver(TreeSolver):
         else:
             raise TypeError('Argument is not of valid node type.')
 
-    def _solve(self, node: PlayerNode, nature_contrib: float, player_contribs: Vector) -> Vector:
+    def _solve(self, node, nature_contrib, player_contribs):
         data = self.__data[node.info_set]
         results = [
             self._traverse(child, nature_contrib, replaced(
@@ -92,7 +91,7 @@ class CFRSolver(TreeSolver):
         return sum_(result * probability for result, probability in zip(results, data.strategy))
 
     class _Data(Generic[T]):
-        def __init__(self, solver: T, info_set: InfoSet):
+        def __init__(self, solver, info_set):
             self.solver = solver
             self.info_set = info_set
 
@@ -104,30 +103,30 @@ class CFRSolver(TreeSolver):
             self.regrets = zeros(info_set.action_count)
 
         @property
-        def strategy(self) -> Vector:
+        def strategy(self):
             pos_regrets = Vector(max(0.0, regret) for regret in self.regrets)
 
             return pos_regrets / sum(pos_regrets) if any(pos_regrets) else self.default_strategy
 
         @property
-        def average_strategy(self) -> Vector:
+        def average_strategy(self):
             return self.strategy_sum / self.weight_sum if self.weight_sum else self.default_strategy
 
         @cached_property
-        def default_strategy(self) -> Vector:
+        def default_strategy(self):
             return full(self.info_set.action_count, 1 / self.info_set.action_count)
 
-        def update(self, contrib: float, partial_contrib: float, counterfactuals: Vector) -> None:
+        def update(self, contrib, partial_contrib, counterfactuals):
             self.weight += contrib
             self.counterfactuals += partial_contrib * counterfactuals
 
-        def collect(self) -> None:
+        def collect(self):
             self.strategy_sum += self.weight * self.strategy
             self.weight_sum += self.weight
             self.regrets += self.counterfactuals - full(self.info_set.action_count,
                                                         self.counterfactuals @ self.strategy)
 
-        def clear(self) -> None:
+        def clear(self):
             self.weight = 0
             self.counterfactuals = zeros(self.info_set.action_count)
 
@@ -137,10 +136,10 @@ class CFRPSolver(CFRSolver):
 
     class _Data(CFRSolver._Data['CFRPSolver']):
         @property
-        def strategy(self) -> Vector:
+        def strategy(self):
             return self.regrets / sum(self.regrets) if any(self.regrets) else self.default_strategy
 
-        def collect(self) -> None:
+        def collect(self):
             super().collect()
 
             multiplier = self.solver._iter_count / (self.solver._iter_count + 1)
@@ -153,30 +152,30 @@ class CFRPSolver(CFRSolver):
 class DCFRSolver(CFRSolver):
     """DCFRSolver is the class for Discounted CFR solvers."""
 
-    def __init__(self, game: TreeGame, alpha: float = 3 / 2, beta: float = 0, gamma: float = 2):
+    def __init__(self, game, alpha = 3 / 2, beta = 0, gamma = 2):
         super().__init__(game)
 
-        self.alpha: Final = alpha
-        self.beta: Final = beta
-        self.gamma: Final = gamma
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
 
     @property
-    def alpha_multiplier(self) -> float:
+    def alpha_multiplier(self):
         return self._iter_count ** self.alpha / (self._iter_count ** self.alpha + 1)
 
     @property
-    def beta_multiplier(self) -> float:
+    def beta_multiplier(self):
         return self._iter_count ** self.beta / (self._iter_count ** self.beta + 1)
 
     @property
-    def gamma_multiplier(self) -> float:
+    def gamma_multiplier(self):
         return (self._iter_count / (self._iter_count + 1)) ** self.gamma
 
-    def regret_multiplier(self, regret: float) -> float:
+    def regret_multiplier(self, regret):
         return self.alpha_multiplier if regret > 0 else self.beta_multiplier
 
     class _Data(CFRSolver._Data['DCFRSolver']):
-        def collect(self) -> None:
+        def collect(self):
             super().collect()
 
             self.strategy_sum *= self.solver.gamma_multiplier
