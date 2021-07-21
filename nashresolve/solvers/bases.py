@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
 
 
-class TreeSolver(ABC):
+class Solver(ABC):
     def __init__(self, game):
         self.game = game
 
     @abstractmethod
-    def query(self, info_set):
-        pass
+    def query(self, info_set): ...
+
+
+class TreeSolver(Solver, ABC):
+    ...
