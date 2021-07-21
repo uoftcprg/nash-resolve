@@ -1,5 +1,4 @@
 from abc import ABC
-from itertools import chain
 
 from auxiliary import flatten
 
@@ -47,7 +46,8 @@ class Node(ABC):
 
     @property
     def descendants(self):
-        return chain((self,), flatten(map(Node.descendants.fget, self.children)))
+        yield self
+        yield from flatten(map(Node.descendants.fget, self.children))
 
     def is_terminal_node(self):
         return isinstance(self, TerminalNode)
