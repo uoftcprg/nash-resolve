@@ -50,6 +50,19 @@ class FactoryTestCase(TestCase):
     def test_kuhn(self):
         game = KuhnPokerTreeFactory().build()
 
+        self.assertEqual(game.player_count, 2)
+        self.assertEqual(len(tuple(game.nodes)), 58)
+        self.assertEqual(len(tuple(game.terminal_nodes)), 30)
+        self.assertEqual(len(tuple(game.chance_nodes)), 4)
+        self.assertEqual(len(tuple(game.player_nodes)), 24)
+        self.assertEqual(len(set(game.info_sets)), 12)
+        self.assertTrue(game.is_zero_sum())
+
+        self.assertSetEqual(
+            set(map(TerminalNode.payoffs.fget, game.terminal_nodes)),
+            {(-1, 1), (1, -1), (2, -2), (-2, 2)},
+        )
+
 
 if __name__ == '__main__':
     main()
