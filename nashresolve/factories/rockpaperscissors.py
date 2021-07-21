@@ -1,5 +1,4 @@
 from copy import deepcopy
-from functools import partial
 
 from auxiliary import next_or_none
 from gameframe.games.rockpaperscissors import RockPaperScissorsGame, RockPaperScissorsHand, RockPaperScissorsPlayer
@@ -16,14 +15,12 @@ class RockPaperScissorsTreeFactory(TreeFactory):
     def player_count(self):
         return self.__player_count
 
-    def _create_action(self, game, hand):
-        return Action(self._create_node(deepcopy(game).throw(hand)), f'Throw {hand.name}')
-
     def _create_game(self):
         return RockPaperScissorsGame(self.player_count)
 
     def _create_actions(self, player):
-        return map(partial(self._create_action, player.game), RockPaperScissorsHand)
+        for hand in RockPaperScissorsHand:
+            yield Action(self._create_node(deepcopy(player.game).throw(hand)), f'Throw {hand.value}')
 
     def _create_chance_actions(self, nature):
         raise ValueError('The nature has no action in rock paper scissor games')

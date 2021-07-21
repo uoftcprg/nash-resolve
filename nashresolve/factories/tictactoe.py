@@ -1,5 +1,4 @@
 from copy import deepcopy
-from functools import partial
 
 from gameframe.games.tictactoe import TicTacToeGame
 
@@ -9,9 +8,6 @@ from nashresolve.trees import Action
 
 class TicTacToeTreeFactory(SequentialTreeFactory):
     _cache = {}
-
-    def _create_action(self, game, coordinates):
-        return Action(self._create_node(deepcopy(game).mark(coordinates)), f'Mark {coordinates[0]}, {coordinates[1]}')
 
     def _create_node(self, game):
         state = str(game.board)
@@ -27,7 +23,8 @@ class TicTacToeTreeFactory(SequentialTreeFactory):
         return TicTacToeGame()
 
     def _create_actions(self, player):
-        return map(partial(self._create_action, player.game), player.game.empty_cell_locations)
+        for r, c in player.game.empty_cell_locations:
+            yield Action(self._create_node(deepcopy(player.game).mark((r, c))), f'Mark {r}, {c}')
 
     def _create_chance_actions(self, nature):
         raise ValueError('The nature has no action in tic tac toe games')

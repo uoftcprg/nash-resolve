@@ -23,11 +23,9 @@ class PokerTreeFactory(SequentialTreeFactory, ABC):
     def _get_info_set(self, player):
         game = player.game
 
-        return (game.actor, game.pot, game.board, ((
-            other.bet,
-            other.stack,
-            (other.hole if other is player else None),
-        ) for other in game.players))
+        return (game.actor.index, game.pot, tuple(map(str, game.board)), (
+            (other.bet, other.stack, (other.hole if other is player else None)) for other in game.players
+        ))
 
 
 class KuhnPokerTreeFactory(PokerTreeFactory):
