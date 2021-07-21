@@ -45,6 +45,11 @@ class FactoryTestCase(TestCase):
         self.assertEqual(len(set(game.info_sets)), 4520)
         self.assertTrue(game.is_zero_sum())
 
+        self.assertSetEqual(set(map(TerminalNode.payoffs.fget, game.terminal_nodes)), {(0, 0), (-1, 1), (1, -1)})
+
+        for player_node in game.player_nodes:
+            self.assertEqual(len(tuple(player_node.children)), len(tuple(game.empty_cell_locations)))
+
 
 if __name__ == '__main__':
     main()

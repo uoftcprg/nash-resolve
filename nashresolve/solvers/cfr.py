@@ -1,10 +1,8 @@
-from collections.abc import Sequence
 from functools import cached_property
 
-from math2.linalg import Vector, full, ones, replaced, zeros
 from auxiliary import product, sum_
+from math2.linalg import Vector, full, ones, replaced, zeros
 
-from nashresolve.games import TreeGame
 from nashresolve.solvers.bases import TreeSolver
 from nashresolve.trees import ChanceNode, InfoSet, Node, PlayerNode, TerminalNode
 
@@ -152,7 +150,7 @@ class CFRPSolver(CFRSolver):
 class DCFRSolver(CFRSolver):
     """DCFRSolver is the class for Discounted CFR solvers."""
 
-    def __init__(self, game, alpha = 3 / 2, beta = 0, gamma = 2):
+    def __init__(self, game, alpha=3 / 2, beta=0, gamma=2):
         super().__init__(game)
 
         self.alpha = alpha

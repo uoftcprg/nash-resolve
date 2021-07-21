@@ -4,8 +4,9 @@ from unittest import TestCase, main
 from nashresolve.contrib.poker import KuhnPokerTreeFactory
 from nashresolve.contrib.rockpaperscissors import RockPaperScissorsTreeFactory
 from nashresolve.contrib.tictactoe import TicTacToeTreeFactory
-from nashresolve.solvers import CFRPSolver, CFRSolver, DCFRSolver, TreeSolver
-from nashresolve.trees import ChanceNode, Node, PlayerNode, TerminalNode
+
+from nashresolve.solvers import CFRPSolver, CFRSolver, DCFRSolver
+from nashresolve.trees import ChanceNode, PlayerNode, TerminalNode
 
 
 class TreeSolverTestCase(TestCase):

@@ -1,7 +1,6 @@
 from copy import deepcopy
 from functools import partial
 
-from auxiliary import flatten
 from gameframe.games.tictactoe import TicTacToeGame
 
 from nashresolve.factories.sequential import SequentialTreeFactory

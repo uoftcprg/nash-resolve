@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from itertools import chain
 
 from auxiliary import flatten
