@@ -23,8 +23,8 @@ class FactoryTestCase(TestCase):
 
                 frequencies = defaultdict(int)
 
-                for payoff in map(TerminalNode.payoffs.fget, game.terminal_nodes):
-                    frequencies[payoff] += 1
+                for payoffs in map(TerminalNode.payoffs.fget, game.terminal_nodes):
+                    frequencies[tuple(payoffs)] += 1
 
                 self.assertSetEqual(set(frequencies.keys()), {(0, 0), (-1, 1), (1, -1)})
                 self.assertSequenceEqual(tuple(frequencies.values()), (3, 3, 3))
@@ -45,7 +45,10 @@ class FactoryTestCase(TestCase):
         self.assertEqual(len(set(game.info_sets)), 4520)
         self.assertTrue(game.is_zero_sum())
 
-        self.assertSetEqual(set(map(TerminalNode.payoffs.fget, game.terminal_nodes)), {(0, 0), (-1, 1), (1, -1)})
+        self.assertSetEqual(
+            set(map(tuple, map(TerminalNode.payoffs.fget, game.terminal_nodes))),
+            {(0, 0), (-1, 1), (1, -1)},
+        )
 
     def test_kuhn(self):
         game = KuhnPokerTreeFactory().build()
@@ -59,7 +62,7 @@ class FactoryTestCase(TestCase):
         self.assertTrue(game.is_zero_sum())
 
         self.assertSetEqual(
-            set(map(TerminalNode.payoffs.fget, game.terminal_nodes)),
+            set(map(tuple, map(TerminalNode.payoffs.fget, game.terminal_nodes))),
             {(-1, 1), (1, -1), (2, -2), (-2, 2)},
         )
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from nashresolve.trees import Node, PlayerNode, TerminalNode
+from nashresolve.trees import Node, PlayerNode
 
 
 class Game(ABC):
@@ -10,6 +10,10 @@ class Game(ABC):
     @property
     def player_count(self):
         return self.__player_count
+
+    @property
+    def players(self):
+        return range(self.player_count)
 
     @abstractmethod
     def is_zero_sum(self): ...
@@ -46,4 +50,8 @@ class TreeGame(Game):
         return map(PlayerNode.info_set.fget, self.player_nodes)
 
     def is_zero_sum(self):
-        return not any(map(sum, map(TerminalNode.payoffs.fget, self.terminal_nodes)))
+        for node in self.terminal_nodes:
+            if node.payoffs.sum():
+                return False
+
+        return True

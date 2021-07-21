@@ -1,5 +1,6 @@
 from abc import ABC
 
+import numpy as np
 from auxiliary import flatten
 
 
@@ -37,6 +38,10 @@ class Node(ABC):
         return self.__actions
 
     @property
+    def action_count(self):
+        return len(self.actions)
+
+    @property
     def labels(self):
         return map(Action.label.fget, self.actions)
 
@@ -63,7 +68,7 @@ class TerminalNode(Node):
     def __init__(self, payoffs):
         super().__init__(())
 
-        self.__payoffs = tuple(payoffs)
+        self.__payoffs = np.fromiter(payoffs, float)
 
     @property
     def payoffs(self):
@@ -71,9 +76,14 @@ class TerminalNode(Node):
 
 
 class ChanceNode(Node):
+    def __init__(self, actions):
+        super().__init__(actions)
+
+        self.__chances = np.fromiter(map(ChanceAction.chance.fget, self.actions), float)
+
     @property
     def chances(self):
-        return map(ChanceAction.chance.fget, self.actions)
+        return self.__chances
 
 
 class PlayerNode(Node):
