@@ -1,13 +1,18 @@
+from abc import ABC, abstractmethod
+
 from nashresolve.trees import Node, PlayerNode, TerminalNode
 
 
-class Game:
+class Game(ABC):
     def __init__(self, player_count):
         self.__player_count = player_count
 
     @property
     def player_count(self):
         return self.__player_count
+
+    @abstractmethod
+    def is_zero_sum(self): ...
 
 
 class TreeGame(Game):
