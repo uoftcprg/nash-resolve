@@ -1,20 +1,20 @@
-from nashresolve.trees import Node, PlayerNode
+from nashresolve.trees import Node, PlayerNode, TerminalNode
 
 
 class Game:
-    def __init__(self, players):
-        self.__players = tuple(players)
+    def __init__(self, player_count):
+        self.__player_count = player_count
 
     @property
-    def players(self):
-        return self.__players
+    def player_count(self):
+        return self.__player_count
 
 
 class TreeGame(Game):
     def __init__(self, root):
         self.__root = root
 
-        super().__init__(range(max(map(PlayerNode.player.fget, self.player_nodes)) + 1))
+        super().__init__(max(map(PlayerNode.player.fget, self.player_nodes), default=-1) + 1)
 
     @property
     def root(self):
@@ -22,7 +22,7 @@ class TreeGame(Game):
 
     @property
     def nodes(self):
-        return self.root.descendents
+        return self.root.descendants
 
     @property
     def terminal_nodes(self):
@@ -39,3 +39,6 @@ class TreeGame(Game):
     @property
     def info_sets(self):
         return map(PlayerNode.info_set.fget, self.player_nodes)
+
+    def is_zero_sum(self):
+        return not any(map(sum, map(TerminalNode.payoffs.fget, self.terminal_nodes)))

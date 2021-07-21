@@ -49,14 +49,14 @@ class Node(ABC):
     def descendants(self):
         return chain((self,), flatten(map(Node.descendants.fget, self.children)))
 
-    @abstractmethod
-    def is_terminal_node(self): ...
+    def is_terminal_node(self):
+        return isinstance(self, TerminalNode)
 
-    @abstractmethod
-    def is_chance_node(self): ...
+    def is_chance_node(self):
+        return isinstance(self, ChanceNode)
 
-    @abstractmethod
-    def is_player_node(self): ...
+    def is_player_node(self):
+        return isinstance(self, PlayerNode)
 
 
 class TerminalNode(Node):
@@ -69,29 +69,11 @@ class TerminalNode(Node):
     def payoffs(self):
         return self.__payoffs
 
-    def is_terminal_node(self):
-        return True
-
-    def is_chance_node(self):
-        return False
-
-    def is_player_node(self):
-        return False
-
 
 class ChanceNode(Node):
     @property
     def chances(self):
         return map(ChanceAction.chance.fget, self.actions)
-
-    def is_terminal_node(self):
-        return False
-
-    def is_chance_node(self):
-        return True
-
-    def is_player_node(self):
-        return False
 
 
 class PlayerNode(Node):
@@ -108,12 +90,3 @@ class PlayerNode(Node):
     @property
     def info_set(self):
         return self.__info_set
-
-    def is_terminal_node(self):
-        return False
-
-    def is_chance_node(self):
-        return False
-
-    def is_player_node(self):
-        return True
