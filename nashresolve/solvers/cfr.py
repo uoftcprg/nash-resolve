@@ -1,134 +1,137 @@
-from functools import cached_property
-
-from auxiliary import product, sum_
-from math2.linalg import Vector, full, ones, replaced, zeros
+import numpy as np
 
 from nashresolve.solvers.bases import TreeSolver
-from nashresolve.trees import ChanceNode, InfoSet, Node, PlayerNode, TerminalNode
-
-T = TypeVar('T', bound='CFRSolver')
 
 
 class CFRSolver(TreeSolver):
     """CFRSolver is the class for vanilla counterfactual regret minimization solvers."""
 
-    def __init__(self, game):
-        super().__init__(game)
+    class Datum:
+        def __init__(self, player, action_count):
+            self.player = player
+            self.action_count = action_count
 
-        self._iter_count = 0
-        self.__data = {
-            info_set: self._Data(self, info_set) for info_set in game.info_sets
-        }
+            self.weight = 0
+            self.counterfactuals = np.zeros(action_count)
 
-    @property
-    def iter_count(self):
-        return self._iter_count
-
-    def query(self, data):
-        if isinstance(data, TerminalNode):
-            return []
-        elif isinstance(data, ChanceNode):
-            return data.probabilities
-        elif isinstance(data, PlayerNode):
-            return self.query(data.info_set)
-        elif isinstance(data, InfoSet):
-            return tuple(map(float, self.__data[data].average_strategy))
-        else:
-            raise TypeError('Unknown queried type')
-
-    def ev(self, node: Optional[Node] = None):
-        return self._ev(self.game.root if node is None else node)
-
-    def step(self):
-        self._iter_count += 1
-        counterfactuals = self._traverse(self.game.root, 1, ones(self.game.player_count))
-
-        for data in self.__data.values():
-            data.collect()
-            data.clear()
-
-        return tuple(map(float, counterfactuals))
-
-    def _ev(self, node):
-        if node is None:
-            return self._ev(self.game.root)
-        elif isinstance(node, TerminalNode):
-            return Vector(node.payoffs)
-        elif isinstance(node, ChanceNode):
-            return sum_(self._ev(child) * probability for child, probability in zip(node.children, node.probabilities))
-        elif isinstance(node, PlayerNode):
-            return sum_(self._ev(child) * probability for child, probability in zip(node.children, self.query(node)))
-        else:
-            raise TypeError('Argument is not of valid node type.')
-
-    def _traverse(self, node, nature_contrib, player_contribs):
-        if isinstance(node, TerminalNode):
-            return Vector(node.payoffs)
-        elif isinstance(node, ChanceNode):
-            return sum_(self._traverse(child, nature_contrib * probability, player_contribs) * probability
-                        for child, probability in zip(node.children, node.probabilities))
-        elif isinstance(node, PlayerNode):
-            return self._solve(node, nature_contrib, player_contribs)
-        else:
-            raise TypeError('Argument is not of valid node type.')
-
-    def _solve(self, node, nature_contrib, player_contribs):
-        data = self.__data[node.info_set]
-        results = [
-            self._traverse(child, nature_contrib, replaced(
-                player_contribs, node.info_set.player, player_contribs[node.info_set.player] * probability,
-            )) for child, probability in zip(node.children, data.strategy)
-        ]
-
-        data.update(
-            player_contribs[node.info_set.player],
-            nature_contrib * product(contrib for i, contrib in enumerate(player_contribs) if i != node.info_set.player),
-            Vector(result[node.info_set.player] for result in results),
-        )
-
-        return sum_(result * probability for result, probability in zip(results, data.strategy))
-
-    class _Data(Generic[T]):
-        def __init__(self, solver, info_set):
-            self.solver = solver
-            self.info_set = info_set
-
-            self.weight = 0.0
-            self.counterfactuals = zeros(info_set.action_count)
-
-            self.strategy_sum = zeros(info_set.action_count)
-            self.weight_sum = 0.0
-            self.regrets = zeros(info_set.action_count)
+            self.strategy_sum = np.zeros(action_count)
+            self.weight_sum = 0
+            self.regrets = np.zeros(action_count)
 
         @property
         def strategy(self):
-            pos_regrets = Vector(max(0.0, regret) for regret in self.regrets)
+            pos_regrets = self.regrets.clip(0)
 
-            return pos_regrets / sum(pos_regrets) if any(pos_regrets) else self.default_strategy
+            return pos_regrets / pos_regrets.sum() if pos_regrets.any() else self.default_strategy
 
         @property
         def average_strategy(self):
             return self.strategy_sum / self.weight_sum if self.weight_sum else self.default_strategy
 
-        @cached_property
+        @property
         def default_strategy(self):
-            return full(self.info_set.action_count, 1 / self.info_set.action_count)
+            return np.full(self.action_count, 1 / self.action_count)
 
-        def update(self, contrib, partial_contrib, counterfactuals):
-            self.weight += contrib
-            self.counterfactuals += partial_contrib * counterfactuals
+        def update(self, contribution, other_contribution, counterfactuals):
+            self.weight += contribution
+            self.counterfactuals += other_contribution * counterfactuals
 
         def collect(self):
             self.strategy_sum += self.weight * self.strategy
             self.weight_sum += self.weight
-            self.regrets += self.counterfactuals - full(self.info_set.action_count,
-                                                        self.counterfactuals @ self.strategy)
+            self.regrets += self.counterfactuals - np.full(self.action_count, self.counterfactuals @ self.strategy)
 
         def clear(self):
             self.weight = 0
-            self.counterfactuals = zeros(self.info_set.action_count)
+            self.counterfactuals = np.zeros(self.action_count)
+
+    def __init__(self, game):
+        super().__init__(game)
+
+        self._iteration_count = 0
+        self._data = {}
+
+    @property
+    def iteration_count(self):
+        return self._iteration_count
+
+    @property
+    def data(self):
+        return self._data
+
+    def get_datum(self, node):
+        if node.info_set in self.data:
+            return self.data[node.info_set]
+        else:
+            self.data[node.info_set] = self.Datum(node.action_count)
+
+            return self.data[node.info_set]
+
+    def get_probabilities(self, node):
+        if node.is_terminal_node():
+            return np.empty(0)
+        elif node.is_chance_node():
+            return node.chances
+        elif node.is_player_node():
+            return self.get_datum(node).average_strategy
+        else:
+            raise ValueError('Unknown node type')
+
+    def get_ev(self, node):
+        if node.is_terminal_node():
+            return node.payoffs
+        else:
+            return self.get_probabilities(node) @ np.fromiter(map(self.get_ev, node.children), float)
+
+    def step(self):
+        self._iteration_count += 1
+        counterfactuals = self._traverse(self.game.root, 1, np.ones(self.game.player_count))
+
+        for datum in self.data.values():
+            datum.collect()
+            datum.clear()
+
+        return counterfactuals
+
+    def _traverse(self, node, nature_contribution, player_contributions):
+        if node.is_terminal_node():
+            return node.payoffs
+        elif node.is_chance_node():
+            counterfactuals = 0
+
+            for child, probability in zip(node.children, node.probabilities):
+                counterfactuals += probability * self._traverse(
+                    child, nature_contribution * probability, player_contributions,
+                )
+
+            return counterfactuals
+        elif node.is_player_node():
+            return self._solve(node, nature_contribution, player_contributions)
+        else:
+            raise ValueError('Unknown node type')
+
+    def _solve(self, node, nature_contribution, player_contributions):
+        datum = self.get_datum(node)
+        counterfactuals = [
+            self._traverse(child, nature_contribution, np.hstack(
+                player_contributions[:node.info_set.player],
+                (player_contributions[node.info_set.player] * probability,),
+                player_contributions[node.info_set.player + 1:],
+            )) for child, probability in zip(node.children, datum.strategy)
+        ]
+
+        datum.update(
+            player_contributions[node.info_set.player],
+            nature_contribution * np.hstack(
+                player_contributions[:node.info_set.player], player_contributions[node.info_set.player + 1:],
+            ).prod(),
+            counterfactuals[:, node.info_set.player],
+        )
+
+        return datum.strategy @ counterfactuals
 
 
+'''
 class CFRPSolver(CFRSolver):
     """CFRPSolver is the class for CFR+ solvers."""
 
@@ -179,3 +182,4 @@ class DCFRSolver(CFRSolver):
             self.strategy_sum *= self.solver.gamma_multiplier
             self.weight_sum *= self.solver.gamma_multiplier
             self.regrets = Vector(self.solver.regret_multiplier(regret) * regret for regret in self.regrets)
+'''

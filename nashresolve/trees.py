@@ -87,15 +87,15 @@ class ChanceNode(Node):
 
 
 class PlayerNode(Node):
-    def __init__(self, player, info_set, actions):
+    def __init__(self, player_index, info_set, actions):
         super().__init__(actions)
 
-        self.__player = player
+        self.__player_index = player_index
         self.__info_set = info_set
 
     @property
-    def player(self):
-        return self.__player
+    def player_index(self):
+        return self.__player_index
 
     @property
     def info_set(self):

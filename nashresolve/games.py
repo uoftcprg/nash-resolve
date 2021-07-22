@@ -11,10 +11,6 @@ class Game(ABC):
     def player_count(self):
         return self.__player_count
 
-    @property
-    def players(self):
-        return range(self.player_count)
-
     @abstractmethod
     def is_zero_sum(self): ...
 
@@ -23,7 +19,7 @@ class TreeGame(Game):
     def __init__(self, root):
         self.__root = root
 
-        super().__init__(max(map(PlayerNode.player.fget, self.player_nodes), default=-1) + 1)
+        super().__init__(max(map(PlayerNode.player_index.fget, self.player_nodes), default=-1) + 1)
 
     @property
     def root(self):
