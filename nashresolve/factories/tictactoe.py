@@ -12,12 +12,10 @@ class TicTacToeTreeFactory(SequentialTreeFactory):
     def _create_node(self, game):
         state = str(game.board)
 
-        if state in self._cache:
-            return self._cache[state]
-        else:
+        if state not in self._cache:
             self._cache[state] = super()._create_node(game)
 
-            return self._cache[state]
+        return self._cache[state]
 
     def _create_game(self):
         return TicTacToeGame()

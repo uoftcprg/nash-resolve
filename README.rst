@@ -1,7 +1,7 @@
 NashResolve
 ===========
 
-NashResolve is a Python package for resolving nash equilibrium.
+NashResolve is a Python package for resolving nash equilibrium in tree games.
 
 License
 -------

@@ -2,8 +2,7 @@ from collections import defaultdict
 from functools import partial
 from unittest import TestCase, main
 
-from nashresolve.factories import KuhnPokerTreeFactory, RockPaperScissorsTreeFactory, TicTacToeTreeFactory
-from nashresolve.trees import TerminalNode
+from nashresolve import KuhnPokerTreeFactory, RockPaperScissorsTreeFactory, TerminalNode, TicTacToeTreeFactory
 
 
 class FactoryTestCase(TestCase):
