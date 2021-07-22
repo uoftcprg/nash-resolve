@@ -7,8 +7,8 @@ class CFRSolver(TreeSolver):
     """CFRSolver is the class for vanilla counterfactual regret minimization solvers."""
 
     class Datum:
-        def __init__(self, player, action_count):
-            self.player = player
+        def __init__(self, player_index, action_count):
+            self.player_index = player_index
             self.action_count = action_count
 
             self.weight = 0
@@ -32,8 +32,13 @@ class CFRSolver(TreeSolver):
         def default_strategy(self):
             return np.full(self.action_count, 1 / self.action_count)
 
-        def update(self, contribution, other_contribution, counterfactuals):
-            self.weight += contribution
+        def update(self, nature_contribution, player_contributions, counterfactuals):
+            player_contribution = player_contributions[self.player_index]
+            other_contribution = nature_contribution * np.hstack(
+                (player_contributions[:self.player_index], player_contributions[self.player_index + 1:])
+            ).prod()
+
+            self.weight += player_contribution
             self.counterfactuals += other_contribution * counterfactuals
 
         def collect(self):
@@ -43,7 +48,7 @@ class CFRSolver(TreeSolver):
 
         def clear(self):
             self.weight = 0
-            self.counterfactuals = np.zeros(self.action_count)
+            self.counterfactuals.fill(0)
 
     def __init__(self, game):
         super().__init__(game)
@@ -63,7 +68,7 @@ class CFRSolver(TreeSolver):
         if node.info_set in self.data:
             return self.data[node.info_set]
         else:
-            self.data[node.info_set] = self.Datum(node.action_count)
+            self.data[node.info_set] = self.Datum(node.player_index, node.action_count)
 
             return self.data[node.info_set]
 
@@ -77,11 +82,17 @@ class CFRSolver(TreeSolver):
         else:
             raise ValueError('Unknown node type')
 
-    def get_ev(self, node):
+    def get_expected_values(self, node):
         if node.is_terminal_node():
             return node.payoffs
         else:
-            return self.get_probabilities(node) @ np.fromiter(map(self.get_ev, node.children), float)
+            probabilities = self.get_probabilities(node)
+            expected_values = np.zeros(probabilities.size)
+
+            for probability, counterfactuals in zip(probabilities, map(self.get_expected_values, node.children)):
+                expected_values += probability * counterfactuals
+
+            return expected_values
 
     def step(self):
         self._iteration_count += 1
@@ -97,7 +108,7 @@ class CFRSolver(TreeSolver):
         if node.is_terminal_node():
             return node.payoffs
         elif node.is_chance_node():
-            counterfactuals = 0
+            counterfactuals = np.zeros(node.probabilities.size)
 
             for child, probability in zip(node.children, node.probabilities):
                 counterfactuals += probability * self._traverse(
@@ -112,23 +123,19 @@ class CFRSolver(TreeSolver):
 
     def _solve(self, node, nature_contribution, player_contributions):
         datum = self.get_datum(node)
-        counterfactuals = [
-            self._traverse(child, nature_contribution, np.hstack(
-                player_contributions[:node.info_set.player],
-                (player_contributions[node.info_set.player] * probability,),
-                player_contributions[node.info_set.player + 1:],
-            )) for child, probability in zip(node.children, datum.strategy)
-        ]
 
-        datum.update(
-            player_contributions[node.info_set.player],
-            nature_contribution * np.hstack(
-                player_contributions[:node.info_set.player], player_contributions[node.info_set.player + 1:],
-            ).prod(),
-            counterfactuals[:, node.info_set.player],
-        )
+        counterfactuals = []
 
-        return datum.strategy @ counterfactuals
+        for i, (child, probability) in enumerate(zip(node.children, datum.strategy)):
+            updated_contributions = player_contributions.copy()
+            updated_contributions[node.player_index] *= probability
+            counterfactuals.append(self._traverse(child, nature_contribution, updated_contributions))
+
+        counterfactuals = np.array(counterfactuals)
+
+        datum.update(nature_contribution, player_contributions, counterfactuals[:, node.player_index])
+
+        return counterfactuals.T @ datum.strategy
 
 
 '''
@@ -148,8 +155,8 @@ class CFRPSolver(CFRSolver):
             self.strategy_sum *= multiplier
             self.weight_sum *= multiplier
             self.regrets = Vector(max(0.0, regret) for regret in self.regrets)
-
-
+'''
+'''
 class DCFRSolver(CFRSolver):
     """DCFRSolver is the class for Discounted CFR solvers."""
 
