@@ -1,7 +1,7 @@
 from abc import ABC
+from itertools import chain
 
 import numpy as np
-from auxiliary import flatten
 
 
 class Action:
@@ -52,7 +52,7 @@ class Node(ABC):
     @property
     def descendants(self):
         yield self
-        yield from flatten(map(Node.descendants.fget, self.children))
+        yield from chain.from_iterable(map(Node.descendants.fget, self.children))
 
     def is_terminal_node(self):
         return isinstance(self, TerminalNode)
