@@ -25,5 +25,5 @@ setup(
         'Programming Language :: Python :: 3.10',
     ),
     python_requires='>=3.7',
-    install_requires=('auxiliary', 'gameframe', 'pokertools', 'numpy'),
+    install_requires=('auxiliary', 'krieg', 'pokerface', 'numpy'),
 )

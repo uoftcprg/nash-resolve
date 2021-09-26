@@ -1,7 +1,7 @@
 auxiliary
-gameframe
+krieg
 numpy
-pokertools
+pokerface
 sphinx
 sphinx-rtd-theme
 twine

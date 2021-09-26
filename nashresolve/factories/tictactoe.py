@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from gameframe.games.tictactoe import TicTacToeGame
+from krieg.tictactoe import TicTacToeGame
 
 from nashresolve.factories.sequential import SequentialTreeFactory
 from nashresolve.trees import Action

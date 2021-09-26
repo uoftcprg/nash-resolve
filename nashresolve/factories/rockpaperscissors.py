@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from auxiliary import next_or_none
-from gameframe.games.rockpaperscissors import RockPaperScissorsGame, RockPaperScissorsHand, RockPaperScissorsPlayer
+from krieg.rockpaperscissors import RockPaperScissorsGame, RockPaperScissorsHand, RockPaperScissorsPlayer
 
 from nashresolve.factories.sequential import TreeFactory
 from nashresolve.trees import Action

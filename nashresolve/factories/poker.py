@@ -3,7 +3,7 @@ from copy import deepcopy
 from functools import partial
 from itertools import combinations
 
-from pokertools import KuhnPoker, PokerPlayer
+from pokerface import KuhnPoker, PokerPlayer
 
 from nashresolve.factories.sequential import SequentialTreeFactory
 from nashresolve.trees import Action, ChanceAction
